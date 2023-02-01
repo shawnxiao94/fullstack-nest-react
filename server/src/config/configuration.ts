@@ -20,7 +20,7 @@ export const getConfiguration = () =>
     // jwt sign secret
     jwt: {
       secret: process.env.JWT_SECRET || 'secretKey', // jwt 秘钥
-      expiresIn: process.env.JWT_EXPIRES_IN || '4h' // jwt 时效时间
+      expiresIn: process.env.JWT_EXPIRES_IN || 3600000 // jwt 时效时间
     },
     // 守卫策略名称
     guardStrategy: {

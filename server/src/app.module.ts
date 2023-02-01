@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
@@ -8,6 +6,7 @@ import { ConfigurationKeyPaths, getConfiguration } from './config/configuration'
 
 import { RedisModule } from './common/libs/redis/redis.module'
 import { RedisClientOptions } from '@liaoliaots/nestjs-redis'
+import { AdminModule } from './modules/admin/admin.module'
 
 @Module({
   imports: [
@@ -46,9 +45,10 @@ import { RedisClientOptions } from '@liaoliaots/nestjs-redis'
         }
       },
       true
-    )
+    ),
+    AdminModule
   ],
-  controllers: [AppController],
-  providers: [AppService]
+  controllers: [],
+  providers: []
 })
 export class AppModule {}
