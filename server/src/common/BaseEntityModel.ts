@@ -6,20 +6,20 @@ export class BaseEntityModel {
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
-    name: 'created_at'
+    name: 'create_time'
   })
   @ApiProperty({ description: '创建时间' })
-  public createdAt: Date
+  public createTime: Date
 
   @Exclude()
   @UpdateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
-    name: 'updated_at'
+    name: 'update_time'
   })
   @ApiProperty({ description: '更新时间' })
-  public updatedAt: Date
+  public updateTime: Date
 }
 
 @Entity()

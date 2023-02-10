@@ -15,7 +15,7 @@ import { ResultData } from '@/common/utils/result'
 import { AppHttpCode } from '@/common/enums/code.enum'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 
-import { getRedisKey } from '@/common/utils/utils'
+import { getRedisKey } from '@/common/utils'
 import { RedisKeyPrefix } from '@/common/enums/redis-key-prefix.enum'
 import ms from 'ms'
 

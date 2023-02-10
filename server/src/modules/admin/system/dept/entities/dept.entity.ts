@@ -1,5 +1,5 @@
 import { BaseEntityModelWithUUIDPrimary } from '@/common/BaseEntityModel'
-import { Column, Entity, ManyToOne, JoinColumn, ManyToMany } from 'typeorm'
+import { Column, Entity, ManyToOne, OneToMany, JoinColumn, ManyToMany } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { UserEntity } from '../../user/entities/user.entity'
@@ -28,10 +28,8 @@ export class DeptEntity extends BaseEntityModelWithUUIDPrimary {
   @Column({ name: 'order_num', type: 'int', comment: '排序', default: 0 })
   orderNum: number
 
-  // 部门负责人
-  @ManyToOne((type) => UserEntity, (user) => user.departments)
-  @JoinColumn({ name: 'leader_user_id' })
-  leader: UserEntity
+  @OneToMany(() => UserEntity, (user) => user.dept)
+  members: UserEntity[]
 
   @ApiProperty({ description: '备注' })
   @Column({ type: 'text', comment: '备注' })
