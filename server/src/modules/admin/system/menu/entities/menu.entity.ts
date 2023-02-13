@@ -7,7 +7,7 @@ import { MenuType } from '@/common/enums/common.enum'
 
 @Entity({ name: 'sys_menu' })
 export class MenuEntity extends BaseEntityModelWithUUIDPrimary {
-  @Column({ name: 'parent_id', nullable: true, default: 0 })
+  @Column({ name: 'parent_id', nullable: true, default: 'root' })
   @ApiProperty({ description: '父级菜单id' })
   parentId: string
 

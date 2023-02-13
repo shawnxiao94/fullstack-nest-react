@@ -11,8 +11,8 @@ export class CreateMenuDto {
   @IsNotEmpty()
   readonly type: MenuType
 
-  @ApiProperty({ description: '父级菜单', required: true, default: 0 })
-  @IsNumberString({}, { message: 'parent 类型错误' })
+  @ApiProperty({ description: '父级菜单', required: true, default: 'root' })
+  @IsString({ message: 'parent 类型错误' })
   @IsNotEmpty({ message: 'parentId 必须填入值' })
   readonly parentId: string
 

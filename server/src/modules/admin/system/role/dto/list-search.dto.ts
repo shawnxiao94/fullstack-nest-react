@@ -3,22 +3,34 @@ import { Type } from 'class-transformer'
 import { IsString, IsNotEmpty } from 'class-validator'
 import { PageOptionsDto } from '@/common/dto/page.dto'
 
-export class ListSearchDto extends PageOptionsDto {
+export class KeywordsListPageDto extends PageOptionsDto {
   @ApiProperty({
-    description: '角色名称关键词',
+    description: '角色名称/备注关键词',
     required: false
   })
   @IsString()
   @Type(() => String)
-  keywords?: string
+  keywords: string
 
+  @ApiProperty({ description: '排序字段', required: false })
+  @IsString()
+  @Type(() => String)
+  orderBy: string
+}
+
+export class KeywordsListDto {
   @ApiProperty({
-    description: '角色备注关键词',
+    description: '角色名称/备注关键词',
     required: false
   })
   @IsString()
   @Type(() => String)
-  remark?: string
+  keywords: string
+
+  @ApiProperty({ description: '排序字段', required: false })
+  @IsString()
+  @Type(() => String)
+  orderBy: string
 }
 
 export class InfoRoleDto {
@@ -28,5 +40,5 @@ export class InfoRoleDto {
   })
   @IsString()
   @Type(() => String)
-  id?: string
+  id: string
 }

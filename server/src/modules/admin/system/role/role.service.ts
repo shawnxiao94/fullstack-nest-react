@@ -1,16 +1,18 @@
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common'
 import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
-import { Repository, DataSource, EntityManager } from 'typeorm'
+import { Repository, DataSource, EntityManager, Like } from 'typeorm'
 import { plainToInstance, instanceToPlain } from 'class-transformer'
 import { RoleEntity } from './entities/role.entity'
 import { UserEntity } from '../user/entities/user.entity'
+import { MenuService } from '../menu/menu.service'
 import { CreateRoleDto } from './dto/create-role.dto'
-import { ListSearchDto, InfoRoleDto } from './dto/list-search.dto'
+import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto } from './dto/list-search.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 
 import { ResultData } from '@/common/utils/result'
 import { AppHttpCode } from '@/common/enums/code.enum'
 import { UserType } from '@/common/enums/common.enum'
+import { clone } from '@/common/utils'
 
 @Injectable()
 export class RoleService {
@@ -18,6 +20,7 @@ export class RoleService {
     @InjectRepository(RoleEntity)
     private readonly roleRepository: Repository<RoleEntity>,
     private readonly dataSource: DataSource,
+    private readonly menuService: MenuService,
     @InjectEntityManager()
     private readonly roleManager: EntityManager
   ) {}
@@ -57,72 +60,71 @@ export class RoleService {
     return ResultData.ok({ list: instanceToPlain(res[0]), total: res[1] })
   }
 
+  // 新增角色
   async create(dto: CreateRoleDto): Promise<ResultData> {
     // 防止重复创建 start
-    if (await this.findOneByRoleName(dto.name)) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色已存在，请调整后重新新增！')
+    if (await this.roleRepository.findOne({ where: { code: dto.code } })) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色已存在，请调整后重新新增！')
     // 防止重复创建 end
-    const newRole = await this.roleRepository.create({
-      ...dto
-    })
-    const res = await this.roleRepository.save(newRole)
+    let roleEntity = new RoleEntity()
+    roleEntity = clone(roleEntity, dto)
+    let menus = []
+    const resMenu = await this.menuService.getByIds({ menuIds: dto.menuIds })
+    menus = resMenu.data.length ? resMenu.data : []
+    roleEntity.createTime = new Date()
+    roleEntity.updateTime = new Date()
+    // roleEntity.dataStatus = 1;
+    roleEntity.menus = menus
+    const res = await this.roleRepository.save(roleEntity)
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色创建失败，请稍后重试')
-    return ResultData.ok(res)
+    return ResultData.ok()
   }
 
-  async findOneByRoleName(roleName: string): Promise<RoleEntity> {
-    return await this.roleRepository.findOne({ where: { name: roleName } })
-  }
-
-  // 获取角色信息
-  async findByID({ id }: InfoRoleDto): Promise<ResultData> {
-    const res = await this.roleRepository.findOne({ where: { id } })
+  // 根据id获取角色信息及关联的菜单
+  async findInfoById({ id }: InfoRoleDto): Promise<ResultData> {
+    const res = await this.roleRepository.find({ where: { id }, relations: ['menus'] })
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '该角色不存在或已删除')
     return ResultData.ok(res)
   }
 
   /** 模糊分页查询角色列表 */
-  async findList(query: ListSearchDto): Promise<ResultData> {
-    const { pageNumber = 1, pageSize = 10, keywords, remark } = query
-    const qb = await this.roleRepository.createQueryBuilder('sys_role').orderBy('sys_role.updated_at', 'DESC')
+  async findListPage(query: KeywordsListPageDto): Promise<ResultData> {
+    const { pageNumber = 1, pageSize = 10, keywords, orderBy } = query
+    const qb = await this.roleRepository.createQueryBuilder('sys_role').orderBy('sys_role.update_time', 'DESC')
     // 9827e1bc-dfb8-458d-8ebd-679358999d93超级管理员id
-    qb.where('sys_role.id != :id', { id: '9827e1bc-dfb8-458d-8ebd-679358999d93' })
-    qb.andWhere('sys_role.name LIKE :name', { name: `%${keywords}%` }).andWhere('sys_role.remark LIKE :remark', { remark: `%${remark}%` })
-    qb.orderBy('sys_role.created_at', 'DESC')
+    // qb.where('sys_role.id != :id', { id: '9827e1bc-dfb8-458d-8ebd-679358999d93' })
+    qb.andWhere('sys_role.name LIKE :name', { name: `%${keywords}%` }).orWhere('sys_role.remark LIKE :remark', { remark: `%${keywords}%` })
+    qb.orderBy('sys_role.create_time', 'DESC')
     const count = await qb.getCount()
     qb.limit(pageSize)
     qb.offset(pageSize * (pageNumber - 1))
     const roles = await qb.getMany()
     return ResultData.ok({ list: roles, total: count })
-
-    // const result = await this.roleRepository.findAndCount({
-    //   // 9827e1bc-dfb8-458d-8ebd-679358999d93超级管理员id
-    //   where: {
-    //     // id: Not('9827e1bc-dfb8-458d-8ebd-679358999d93'),
-    //     name: Like(`%${keywords}%`),
-    //     remark: Like(`%${remark}%`)
-    //   },
-    //   order: {
-    //     updated_at: 'DESC'
-    //   },
-    //   take: pageSize,
-    //   skip: (pageNumber - 1) * pageSize
-    // })
-
-    // return ResultData.ok(result)
   }
 
+  /** 查询角色列表 */
+  async findList(query: KeywordsListDto): Promise<ResultData> {
+    const { keywords, orderBy } = query
+    const result = await this.roleRepository.find({
+      where: [{ name: Like(`%${keywords}%`) }, { remark: Like(`%${keywords}%`) }],
+      order: {
+        updateTime: 'DESC'
+      }
+    })
+
+    return ResultData.ok(result)
+  }
+
+  // 根据id更新角色
   async updateById(dto: UpdateRoleDto): Promise<ResultData> {
-    const existRole = await this.roleRepository.findOne({ where: { id: dto.id } })
-    if (!existRole) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
-
-    const newRole = {
-      ...existRole,
-      name: dto.name,
-      remark: dto.remark
-    }
-
-    const updateRole = this.roleRepository.merge(existRole, newRole)
-    const res = await this.roleRepository.save(updateRole)
+    let roleEntity = await this.roleRepository.findOne({ where: { id: dto.id } })
+    if (!roleEntity) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
+    roleEntity = clone(roleEntity, dto, ['createTime'])
+    const resMenu = await this.menuService.getByIds({ menuIds: dto.menuIds })
+    const menus = resMenu.data.length ? resMenu.data : []
+    roleEntity.menus = menus
+    roleEntity.updateTime = new Date()
+    // const updateRole = this.roleRepository.merge(existRole, newRole)
+    const res = await this.roleRepository.save(roleEntity)
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前角色更新失败，请稍后尝试')
     return ResultData.ok(res)
   }

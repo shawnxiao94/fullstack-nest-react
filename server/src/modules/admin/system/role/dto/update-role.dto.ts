@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator'
+import { IsString, IsNotEmpty, IsOptional, Length, IsArray } from 'class-validator'
 
 export class UpdateRoleDto {
   @ApiProperty({
@@ -20,5 +20,11 @@ export class UpdateRoleDto {
   @IsString({ message: 'remark 类型错误, 正确类型 string' })
   @Length(0, 100, { message: 'remark 字符长度在 0~100' })
   @IsOptional()
-  remark?: string
+  remark: string
+
+  @ApiProperty({ description: '当前角色所拥有的菜单组', required: false })
+  @IsArray({ message: 'menuIds 类型错误，正确类型 string[]' })
+  @IsString({ each: true, message: '菜单组内类型错误' })
+  @IsNotEmpty({ each: true, message: '菜单id 不能为空' })
+  menuIds: string[]
 }
