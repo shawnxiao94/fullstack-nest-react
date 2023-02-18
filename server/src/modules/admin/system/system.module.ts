@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 // 后台系统用户
@@ -27,9 +27,9 @@ import { ActionLogService } from './action-log/action-log.service'
 import { ActionLogController } from './action-log/action-log.controller'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DeptEntity, UserEntity, RoleEntity, MenuEntity, ActionLogEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, DeptEntity, RoleEntity, MenuEntity, ActionLogEntity])],
   controllers: [DeptController, UserController, RoleController, MenuController, ActionLogController],
-  providers: [DeptService, UserService, RoleService, MenuService, ActionLogService],
-  exports: []
+  providers: [UserService, DeptService, RoleService, MenuService, ActionLogService],
+  exports: [UserService, DeptService]
 })
 export class SystemModule {}

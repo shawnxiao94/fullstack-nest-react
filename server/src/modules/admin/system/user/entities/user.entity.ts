@@ -14,20 +14,20 @@ import { ActionLogEntity } from '../../action-log/entities/action-log.entity'
 
 @Entity({ name: 'sys_user' })
 export class UserEntity extends BaseEntityModelWithUUIDPrimary {
-  @Column({ length: 100, nullable: true })
+  @Column({ length: 100, nullable: true, comment: '名称' })
   @ApiProperty({ type: String, description: '名称' })
   name: string
 
-  @Column({ unique: true })
-  @ApiProperty({ type: String, description: '用户名' })
-  username: string
+  @Column({ unique: true, comment: '账户名' })
+  @ApiProperty({ type: String, description: '账户名' })
+  account: string
 
   @Exclude()
-  @Column()
+  @Column({ comment: '密码' })
   @ApiProperty({ type: String, description: '密码' })
   password: string
 
-  @Column({ name: 'nick_name', nullable: true })
+  @Column({ name: 'nick_name', nullable: true, comment: '昵称' })
   @ApiProperty({ type: String, description: '昵称' })
   nickName: string
 
@@ -47,6 +47,10 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
   @ApiProperty({ type: String, description: '备注' })
   remark: string
 
+  @ApiProperty({ type: Number, description: '性别：0-女 1-男', enum: $enum(UserType).getValues() })
+  @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '性别：0-女 1-男' })
+  public sex: UserType
+
   @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户', enum: $enum(UserType).getValues() })
   @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '帐号类型：0-超管， 1-普通用户' })
   public type: UserType
@@ -60,6 +64,10 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
 
   @Column({ default: null })
   openid: string
+
+  // 部门领导 用户可以领导多个部门，一个部门只能有一个负责人
+  @OneToMany(() => DeptEntity, (dept) => dept.leader)
+  department: DeptEntity
 
   // 所属的部门
   @ManyToOne(() => DeptEntity, (dept) => dept.members, {

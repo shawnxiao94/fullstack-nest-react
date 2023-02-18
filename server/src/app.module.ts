@@ -29,6 +29,7 @@ import { AdminModule } from './modules/admin/admin.module'
         database: configService.get<string>('database.database'),
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get('database.logging'),
+        maxQueryExecutionTime: configService.get('database.maxQueryExecutionTime'),
         timezone: configService.get('database.timezone') // 时区
       })
     }),

@@ -1,18 +1,17 @@
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common'
 import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
-import { Repository, DataSource, EntityManager, Like } from 'typeorm'
-import { plainToInstance, instanceToPlain } from 'class-transformer'
+import { Repository, DataSource, Like, In } from 'typeorm'
+import { instanceToPlain } from 'class-transformer'
 import { RoleEntity } from './entities/role.entity'
-import { UserEntity } from '../user/entities/user.entity'
+import { MenuEntity } from '../menu/entities/menu.entity'
 import { MenuService } from '../menu/menu.service'
 import { CreateRoleDto } from './dto/create-role.dto'
-import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto } from './dto/list-search.dto'
+import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto, InfoArrRoleDto } from './dto/list-search.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 
 import { ResultData } from '@/common/utils/result'
 import { AppHttpCode } from '@/common/enums/code.enum'
-import { UserType } from '@/common/enums/common.enum'
-import { clone } from '@/common/utils'
+import { clone, flatArrToTree } from '@/common/utils'
 
 @Injectable()
 export class RoleService {
@@ -20,45 +19,8 @@ export class RoleService {
     @InjectRepository(RoleEntity)
     private readonly roleRepository: Repository<RoleEntity>,
     private readonly dataSource: DataSource,
-    private readonly menuService: MenuService,
-    @InjectEntityManager()
-    private readonly roleManager: EntityManager
+    private readonly menuService: MenuService
   ) {}
-
-  /**
-   * @param roleId 角色 id
-   * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
-   */
-  async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
-    let res
-    if (isCorrelation) {
-      const qb = await this.roleRepository
-        .createQueryBuilder('sys_role')
-        .leftJoinAndSelect('sys_role.user_id', 'user_id')
-        .leftJoinAndSelect('sys_role.tags', 'tag')
-        .leftJoinAndSelect('sys_role.author', 'user')
-        .orderBy('post.updateTime', 'DESC')
-
-      // res = await this.dataSource
-      //   .createQueryBuilder('sys_role')
-      //   .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
-      //   .where('su.status = 1 and ur.role_id = :roleId', { roleId })
-      //   .skip(size * (page - 1))
-      //   .take(size)
-      //   .getManyAndCount()
-    } else {
-      res = await this.dataSource
-        .createQueryBuilder('sys_user', 'su')
-        .where((qb: any) => {
-          const subQuery = qb.subQuery().select(['sur.user_id']).from('sys_role', 'sur').where('sur.role_id = :roleId', { roleId }).getQuery()
-          return `su.status = 1 and su.id not in ${subQuery}`
-        })
-        .skip(size * (page - 1))
-        .take(size)
-        .getManyAndCount()
-    }
-    return ResultData.ok({ list: instanceToPlain(res[0]), total: res[1] })
-  }
 
   // 新增角色
   async create(dto: CreateRoleDto): Promise<ResultData> {
@@ -80,10 +42,76 @@ export class RoleService {
   }
 
   // 根据id获取角色信息及关联的菜单
-  async findInfoById({ id }: InfoRoleDto): Promise<ResultData> {
-    const res = await this.roleRepository.find({ where: { id }, relations: ['menus'] })
+  async findInfoById({ id, requireMenus = false, treeType = false }: InfoRoleDto): Promise<ResultData> {
+    let res = null
+    if (requireMenus) {
+      res = await this.roleRepository.find({ where: { id }, relations: ['menus'] })
+      if (treeType) {
+        res = await this.getRouteTree(res)
+      }
+    } else {
+      res = await this.roleRepository.find({ where: { id } })
+    }
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '该角色不存在或已删除')
+
     return ResultData.ok(res)
+  }
+
+  // 根据ids数组获取角色信息及关联的菜单
+  async findInfosByIds({ ids, requireMenus = false, treeType = false }: InfoArrRoleDto): Promise<ResultData> {
+    let res = null
+    if (requireMenus) {
+      res = await this.roleRepository.find({ where: { id: In(ids) }, relations: ['menus'] })
+      if (treeType) {
+        res = await this.getRouteTree(res)
+      }
+    } else {
+      res = await this.roleRepository.find({ where: { id: In(ids) } })
+    }
+    if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '该角色不存在或已删除')
+
+    return ResultData.ok(res)
+  }
+
+  //获取前端路由Tree
+  private async getRouteTree(data: RoleEntity[]): Promise<RoleEntity[]> {
+    if (!data?.length) {
+      return []
+    }
+    const result = []
+    data.forEach((item: RoleEntity) => {
+      const obj = { ...item, menus: [] }
+      if (item?.menus?.length) {
+        item.menus.forEach((menu: MenuEntity) => {
+          const router = {
+            id: menu.id,
+            parentId: menu.parentId,
+            name: menu.name,
+            path: menu.path,
+            componentPath: menu.componentPath,
+            redirect: menu.redirect,
+            meta: {
+              title: menu.title,
+              icon: menu.icon,
+              hidden: menu.hidden,
+              keepalive: menu.keepalive,
+              type: menu.type,
+              isLink: menu.isLink,
+              isIframe: menu.isIframe,
+              level: menu.level,
+              sort: menu.sort,
+              openMode: menu.openMode
+            },
+            children: []
+          }
+          obj.menus.push(router)
+        })
+        const tmp = flatArrToTree(obj.menus)
+        obj.menus = [...tmp]
+      }
+      result.push(obj)
+    })
+    return result
   }
 
   /** 模糊分页查询角色列表 */

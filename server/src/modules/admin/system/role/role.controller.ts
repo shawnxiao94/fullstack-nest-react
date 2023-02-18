@@ -3,7 +3,7 @@ import { RoleService } from './role.service'
 import { ApiOperation, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto } from './dto/list-search.dto'
+import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto, InfoArrRoleDto } from './dto/list-search.dto'
 import { ResultData } from '@/common/utils/result'
 import { ApiResult } from '@/common/decorator/api-result.decorator'
 
@@ -34,6 +34,12 @@ export class RoleController {
   @ApiOperation({ summary: '根据id获取角色信息及关联的菜单' })
   async findInfoById(@Query() query: InfoRoleDto): Promise<ResultData> {
     return await this.roleService.findInfoById(query)
+  }
+
+  @Post('infosByIds')
+  @ApiOperation({ summary: '根据ids数组获取角色信息及关联的菜单' })
+  async findInfosByIds(@Body() dto: InfoArrRoleDto): Promise<ResultData> {
+    return await this.roleService.findInfosByIds(dto)
   }
 
   @ApiOperation({ summary: '更新角色' })

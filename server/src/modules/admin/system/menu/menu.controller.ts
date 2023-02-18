@@ -9,7 +9,7 @@ import { ResultData } from '@/common/utils/result'
 import { ApiResult } from '@/common/decorator/api-result.decorator'
 
 @ApiBearerAuth()
-@ApiTags('系统菜单管理')
+@ApiTags('菜单模块')
 @Controller('menu')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}

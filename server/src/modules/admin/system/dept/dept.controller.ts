@@ -7,6 +7,7 @@ import { ApiResult } from '@/common/decorator/api-result.decorator'
 import { DeptService } from './dept.service'
 import { CreateDeptDto } from './dto/create-dept.dto'
 import { UpdateDeptDto } from './dto/update-dept.dto'
+import { FindListDto, InfoByIdDto, parentIdDto } from './dto/search.dto'
 
 @ApiTags('部门模块')
 @Controller('dept')
@@ -18,17 +19,29 @@ export class DeptController {
   create(@Body() createDeptDto: CreateDeptDto): Promise<ResultData> {
     return this.deptService.create(createDeptDto)
   }
-  @Get('list')
-  @ApiOperation({ summary: '查询部门列表' })
-  async find(): Promise<ResultData> {
-    return this.deptService.find()
+  @Post('list')
+  @ApiOperation({ summary: '关键词模糊查询部门列表' })
+  async findListPage(@Body() dto: FindListDto): Promise<ResultData> {
+    return this.deptService.findListPage(dto)
   }
 
-  @Put()
+  @Put('updateById')
   @ApiOperation({ summary: '部门更新' })
   @ApiResult()
-  async update(@Body() dto: UpdateDeptDto): Promise<ResultData> {
-    return this.deptService.update(dto)
+  async updateById(@Body() dto: UpdateDeptDto): Promise<ResultData> {
+    return this.deptService.updateById(dto)
+  }
+
+  @ApiOperation({ summary: '根据id查询部门详情', description: '根据id查询部门' })
+  @Post('getInfoById')
+  async getById(@Body() dto: InfoByIdDto): Promise<ResultData> {
+    return await this.deptService.getInfoById(dto)
+  }
+
+  @ApiOperation({ summary: '根据父级id获取组织架构树', description: '根据父级id获取组织架构树' })
+  @Post('findTree')
+  async findTree(@Body() dto: parentIdDto): Promise<ResultData> {
+    return await this.deptService.findTree(dto)
   }
 
   @Delete(':id')

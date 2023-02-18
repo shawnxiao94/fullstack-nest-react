@@ -5,12 +5,12 @@ import { $enum } from 'ts-enum-util'
 import { StatusValue } from '@/common/enums/common.enum'
 
 export class UpdateDeptDto {
-  @ApiProperty({ description: 'id' })
-  @IsNumberString({}, { message: 'id 类型错误，正确类型 string' })
+  @ApiProperty({ description: 'id', required: true })
+  @IsString({ message: 'id 类型错误，正确类型 string' })
   id: string
 
   @ApiProperty({ description: '上级部门 id', required: false })
-  @IsNumberString({}, { message: 'parentId 类型错误，正确类型 string' })
+  @IsString({ message: 'parentId 类型错误，正确类型 string' })
   @IsOptional()
   parentId?: string
 
@@ -27,7 +27,7 @@ export class UpdateDeptDto {
   @ApiProperty({ description: '部门负责人', required: false })
   @IsString({ message: 'leader 类型错误，正确类型 string' })
   @IsOptional()
-  readonly leader?: string
+  readonly userId?: string
 
   @ApiProperty({ description: '备注', required: false })
   @IsString({ message: 'remark  类型错误，正确类型 string' })

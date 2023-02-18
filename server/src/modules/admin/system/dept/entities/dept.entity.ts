@@ -8,8 +8,8 @@ import { StatusValue, UserType } from '@/common/enums/common.enum'
 
 @Entity({ name: 'sys_dept' })
 export class DeptEntity extends BaseEntityModelWithUUIDPrimary {
-  @ApiProperty({ description: '上级部门 id' })
-  @Column({ type: 'bigint', name: 'parent_id', comment: '父级部门 id' })
+  @ApiProperty({ description: '上级部门 id', default: 'root' })
+  @Column({ name: 'parent_id', type: 'varchar', length: 100, comment: '父级部门 id' })
   parentId: string
 
   @ApiProperty({ description: '部门名称' })
@@ -28,6 +28,12 @@ export class DeptEntity extends BaseEntityModelWithUUIDPrimary {
   @Column({ name: 'order_num', type: 'int', comment: '排序', default: 0 })
   orderNum: number
 
+  // 部门负责人
+  @ManyToOne(() => UserEntity, (user) => user.department)
+  @JoinColumn()
+  leader: string
+
+  // 部门成员
   @OneToMany(() => UserEntity, (user) => user.dept)
   members: UserEntity[]
 

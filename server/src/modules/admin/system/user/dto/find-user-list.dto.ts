@@ -1,25 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { $enum } from 'ts-enum-util'
-
+import { IsString, IsIn, IsArray } from 'class-validator'
 import { StatusValue } from '@/common/enums/common.enum'
 import { PageOptionsDto } from '@/common/dto/page.dto'
 
 export class FindUserListDto extends PageOptionsDto {
-  @ApiProperty({ description: '账号模糊搜索', required: false })
-  userName?: string
+  @ApiProperty({
+    description: '昵称/账号/备注关键词模糊搜索',
+    required: true
+  })
+  @IsString()
+  keywords: string
 
-  @ApiProperty({ description: '按账号状态查询用户', enum: $enum(StatusValue).getValues(), required: false })
-  status?: StatusValue
+  @ApiProperty({ description: '状态,1-有效，0-禁用', required: false, default: 1, enum: $enum(StatusValue).getValues() })
+  status: StatusValue
 
-  @ApiProperty({ description: '拥有角色id', required: false })
-  roleId?: string
+  @ApiProperty({
+    description: '角色ID数组',
+    required: false
+  })
+  @IsArray({ message: 'roleIds类型错误，正确类型 string[]' })
+  @IsString({ each: true, message: '类型错误' })
+  roleIds: string[]
 
-  @ApiProperty({ description: '当 roleId 不为空时有效，查询用户是否有当前权限 0-无当前角色 1-有当前角色', enum: [0, 1], required: false })
-  hasCurrRole?: 0 | 1
-
-  @ApiProperty({ description: '部门id', required: false })
-  deptId?: string
-
-  @ApiProperty({ description: '当 deptId 不为空时有效，查询用户是否在当前部门 0-不在当前部门 1-在当前部门', enum: [0, 1], required: false })
-  hasCurrDept?: 0 | 1
+  @ApiProperty({
+    description: '归属部门',
+    required: false,
+    type: String
+  })
+  @IsString({ message: '类型错误' })
+  deptId: string
 }

@@ -39,7 +39,8 @@ export const getConfiguration = () =>
       autoLoadEntities: true, // 自动执行引入实体
       /** https://typeorm.io/migrations */
       synchronize: true,
-      logging: ['error'],
+      logging: ['error'], // 记录错误日志
+      maxQueryExecutionTime: 3000, // 记录耗时长的查询
       timezone: '+08:00', // 东八区
       cli: {
         // migrationsDir: 'src/migrations'
