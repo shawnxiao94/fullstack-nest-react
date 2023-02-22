@@ -22,8 +22,9 @@ import { isEmpty } from 'lodash'
 
 export class CreateUserDto {
   @ApiProperty({ required: false, description: '手机号' })
-  @IsMobilePhone('zh-CN', { strictMode: false }, { message: '请输入正确的手机号' })
-  @IsOptional()
+  // @IsMobilePhone('zh-CN', { strictMode: false }, { message: '请输入正确的手机号' })
+  // @IsOptional()
+  @IsString()
   mobile: string
 
   @ApiProperty({

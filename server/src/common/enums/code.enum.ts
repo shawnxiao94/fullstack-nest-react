@@ -31,5 +31,7 @@ export enum AppHttpCode {
   /** 岗位已存在 */
   POST_REPEAT = 600001,
   /** 岗位不存在 */
-  POST_NOT_FOUND = 600004
+  POST_NOT_FOUND = 600004,
+  /** 图片验证码错误 */
+  CAPTCHA_NOT_INVALID = 700002
 }

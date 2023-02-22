@@ -30,6 +30,6 @@ import { ActionLogController } from './action-log/action-log.controller'
   imports: [TypeOrmModule.forFeature([UserEntity, DeptEntity, RoleEntity, MenuEntity, ActionLogEntity])],
   controllers: [DeptController, UserController, RoleController, MenuController, ActionLogController],
   providers: [UserService, DeptService, RoleService, MenuService, ActionLogService],
-  exports: [UserService, DeptService]
+  exports: [UserService, RoleService, DeptService]
 })
 export class SystemModule {}

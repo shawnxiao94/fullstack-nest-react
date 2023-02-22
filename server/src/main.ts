@@ -9,6 +9,9 @@ import { TransformInterceptor } from './common/interceptor/transformInterceptor'
 
 import { setupSwagger } from './setupSwagger'
 
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+
 const GlobalPrefix = 'nestApi'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
@@ -23,6 +26,17 @@ async function bootstrap() {
 
   // 设置swagger文档
   setupSwagger(app)
+
+  // 设置访问频率
+  app.use(
+    rateLimit({
+      windowMs: 15 * 60 * 1000, // 15分钟
+      max: 1000 // 限制15分钟内最多只能访问1000次
+    })
+  )
+
+  // web 安全，防常见漏洞
+  app.use(helmet())
 
   await app.listen(process.env.SERVER_PORT, '0.0.0.0')
   const serverUrl = await app.getUrl()

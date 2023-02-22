@@ -1,9 +1,9 @@
 import { BaseEntityModelWithUUIDPrimary } from '@/common/BaseEntityModel'
-import { Column, Entity, BeforeInsert, OneToMany, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm'
+import { Column, Entity, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Exclude } from 'class-transformer'
-import * as bcrypt from 'bcryptjs'
+import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 
 import { $enum } from 'ts-enum-util'
 import { StatusValue, UserType } from '@/common/enums/common.enum'
@@ -22,10 +22,14 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
   @ApiProperty({ type: String, description: '账户名' })
   account: string
 
-  @Exclude()
-  @Column({ comment: '密码' })
+  @Exclude({ toPlainOnly: true }) // 输出屏蔽密码
+  @Column({ type: 'varchar', nullable: false, comment: '密码' })
   @ApiProperty({ type: String, description: '密码' })
   password: string
+
+  @Exclude({ toPlainOnly: true }) // 输出屏蔽盐
+  @Column({ type: 'varchar', length: 200, nullable: false, comment: '盐' })
+  public salt: string
 
   @Column({ name: 'nick_name', nullable: true, comment: '昵称' })
   @ApiProperty({ type: String, description: '昵称' })
@@ -101,8 +105,17 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
 
   // 通过生命周期把密码加密再存入库
   @BeforeInsert()
+  @BeforeUpdate()
   async encryptPwd() {
-    if (!this.password) return
-    this.password = await bcrypt.hashSync(this.password, 10)
+    try {
+      const salt = await genSalt()
+      if (!this.password) return
+      this.password = await hash(this.password, salt)
+      this.salt = salt
+      // this.password = await hashSync(this.password, 10)
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
   }
 }

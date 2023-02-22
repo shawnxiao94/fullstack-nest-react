@@ -9,8 +9,8 @@ import { RoleService } from '../role/role.service'
 import { DeptService } from '../dept/dept.service'
 
 import { CreateUserDto, AddUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import { InfoSearchDto } from './dto/info-search.dto'
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto'
+import { InfoSearchDto, RetrieveUserDto, UpdateUserAvatarDto } from './dto/info-search.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
 
 import { ResultData } from '@/common/utils/result'
@@ -21,6 +21,8 @@ import { getRedisKey } from '@/common/utils'
 import { RedisKeyPrefix } from '@/common/enums/redis-key-prefix.enum'
 import { plainToClass } from 'class-transformer'
 import { clone } from '@/common/utils'
+import { compareSync, hashSync } from 'bcryptjs'
+import { validPhone, validEmail } from '@/common/utils/validate'
 import ms from 'ms'
 
 @Injectable()
@@ -37,15 +39,24 @@ export class UserService {
    */
   async register(signupDto: CreateUserDto): Promise<ResultData> {
     const { password, confirmPassword, mobile, account, email } = signupDto
-
+    if (mobile) {
+      if (!validPhone(mobile)) {
+        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前注册手机号格式错误！')
+      }
+    }
+    if (email) {
+      if (!validEmail(email)) {
+        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前注册邮箱格式错误！')
+      }
+    }
     // 防止重复创建 start
     if (await this.usersRepository.findOne({ where: { account } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '帐号已存在，请调整后重新注册！')
-    if (mobile) {
+    if (mobile && validPhone(mobile)) {
       if (await this.usersRepository.findOne({ where: { mobile: mobile } })) {
         return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前手机号已存在，请调整后重新注册')
       }
     }
-    if (email) {
+    if (email && validEmail(email)) {
       if (await this.usersRepository.findOne({ where: { email: email } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前邮箱已存在，请调整后重新注册')
     }
     if (password !== confirmPassword) return ResultData.fail(AppHttpCode.USER_PASSWORD_INVALID, '两次输入密码不一致，请重试')
@@ -73,17 +84,25 @@ export class UserService {
       }
     }
     if (model.mobile) {
-      if (await this.usersRepository.findOne({ where: { mobile: dto.mobile.trim() } })) {
-        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前mobile已存在！')
+      if (validPhone(model.mobile)) {
+        if (await this.usersRepository.findOne({ where: { mobile: dto.mobile.trim() } })) {
+          return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前mobile已存在！')
+        }
+      } else {
+        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前mobile格式错误！')
       }
     }
     if (model.email) {
-      if (await this.usersRepository.findOne({ where: { email: dto.email.trim() } })) {
-        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前email已存在！')
+      if (validEmail(model.email)) {
+        if (await this.usersRepository.findOne({ where: { email: dto.email.trim() } })) {
+          return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前email已存在！')
+        }
+      } else {
+        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前email格式错误！')
       }
     }
-    //给新用户设置个默认密码：888888，用户登录后可以自行修改密码
-    model.password = '888888'
+    //给新用户设置个默认密码：123456，用户登录后可以自行修改密码
+    model.password = '123456'
     model.createTime = new Date()
     model.updateTime = new Date()
     let userId
@@ -123,7 +142,7 @@ export class UserService {
 
   /** 根据id更新用户信息及关联的角色 */
   async updateById(dto: UpdateUserDto): Promise<ResultData> {
-    const { id, status, nickName, avatar, remark, sex, roleIds, deptId } = dto
+    const { id, status, nickName, remark, sex, roleIds, deptId } = dto
     const resArr = await this.usersRepository.find({ where: { id }, relations: ['roles', 'dept'] })
     // const resArr = await this.usersRepository.createQueryBuilder().relation('sys_user', 'roles').of(id).loadMany()
     const userEntity = resArr[0]
@@ -133,7 +152,7 @@ export class UserService {
     const result = await this.usersRepository
       .createQueryBuilder()
       .update(UserEntity)
-      .set({ status, nickName, avatar, remark, sex, updateTime: new Date() })
+      .set({ status, nickName, remark, sex, updateTime: new Date() })
       .where('id = :id', { id }) // 或者.whereInIds(id)
       .execute() // 執行d
     if (result.affected > 0) {
@@ -165,48 +184,49 @@ export class UserService {
     } else {
       return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户非关联信息更新失败，请稍后重试')
     }
+  }
 
-    // let userEntity = await this.usersRepository.findOne({ where: { id: dto.id } })
-    // if (!userEntity) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已被删除')
-    // userEntity = clone(userEntity, dto, ['createTime', 'mobile', 'email', 'account'])
-    // const resRoles = await this.roleService.findInfosByIds({ ids: dto.roleIds, requireMenus: false, treeType: false })
-    // const roles = resRoles.data.length ? resRoles.data : []
-    // // let deptEntity = await this.deptService.getInfoById({ id: dto.deptId, status: 1, requireLeader: false, requireMembers: false })
-    // // deptEntity = deptEntity?.data?.id ? deptEntity.data : null //注意返回结果类型得为数据库实体
-    // userEntity.roles = roles
-    // // userEntity.dept = deptEntity as any
-    // userEntity.updateTime = new Date()
-    // const res = await this.usersRepository.save(userEntity)
-    // if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户信息更新失败，请稍后尝试')
-    // return ResultData.ok(res)
-    // return ResultData.ok()
+  // 根据账号/手机/邮箱查询用户详情
+  async findInfoByAccountOrMobileOrEmail({ mobile, account, email }): Promise<UserEntity> {
+    let res = null
+    if (mobile && validPhone(mobile)) {
+      res = await this.usersRepository.findOne({ where: { mobile }, relations: ['roles', 'dept'] })
+    }
+    if (account) {
+      res = await this.usersRepository.findOne({ where: { account }, relations: ['roles', 'dept'] })
+    }
+    if (email && validEmail(email)) {
+      res = await this.usersRepository.findOne({ where: { email }, relations: ['roles', 'dept'] })
+    }
+    return res
   }
 
   /** 查询单个用户及关联的角色 */
-  async findOne(dto: InfoSearchDto): Promise<ResultData> {
+  async findInfoById(dto: InfoSearchDto): Promise<ResultData> {
     const user = await this.findOneByIdFn(dto)
     if (!user) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
     return ResultData.ok(user)
   }
 
-  // 走redis缓存
   async findOneByIdFn({ id, requireRoles = false, requireDept = false }: InfoSearchDto): Promise<UserEntity> {
     let res = null
     if (requireRoles || requireDept) {
       if (requireRoles && requireDept) {
-        res = await this.usersRepository.find({ where: { id }, relations: ['roles', 'dept'] })
+        res = await this.usersRepository.findOne({ where: { id }, relations: ['roles', 'dept'] })
       } else {
         if (requireRoles) {
-          res = await this.usersRepository.find({ where: { id }, relations: ['roles'] })
+          res = await this.usersRepository.findOne({ where: { id }, relations: ['roles'] })
         }
         if (requireDept) {
-          res = await this.usersRepository.find({ where: { id }, relations: ['dept'] })
+          res = await this.usersRepository.findOne({ where: { id }, relations: ['dept'] })
         }
       }
     } else {
       res = await this.usersRepository.findOne({ where: { id } })
     }
     return res
+    // 走redis缓存
+
     // const redisKey = getRedisKey(RedisKeyPrefix.USER_INFO, id)
     // const redisRes = await this.redisService.hGetAll(redisKey)
     // let res = null
@@ -229,6 +249,55 @@ export class UserService {
     //   await this.redisService.hmset(redisKey, instanceToPlain(user), parseInt(this.configService.get<string>('jwt.expiresIn')) / 1000)
     // }
     // return redisRes?.id && String(requireRoles).includes(String(redisRes?.requireRoles)) ? redisRes : res
+  }
+
+  // 更新密码
+  async updatePassword(dto: UpdateUserPasswordDto): Promise<ResultData> {
+    const { id, oldPassword } = dto
+    const user = await this.usersRepository.findOne({ where: { id } })
+    if (!user) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
+    if (!compareSync(oldPassword, user.password)) {
+      return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '密码不正确。')
+    }
+    user.password = dto.password
+    user.updateTime = new Date()
+    const res = await this.usersRepository.update(id, user) // 注意需要通过把更新的值赋值给实体进行更新，直接对象形式不行
+    // update 的第二个参数实际上只是一个对象，它并不是我们的 entity，{ password } 这个对象上是没有 hashPassword 这个方法的。改传user的时候，它的原型上面才挂有这个方法。
+    // const res = await this.usersRepository.update(id, { password: dto.password, updateTime: new Date() })
+    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前重置密码像失败，请稍后重试')
+    return await ResultData.ok()
+  }
+
+  // 重置密码
+  async resetPassword(dto: RetrieveUserDto): Promise<ResultData> {
+    const { id } = dto
+    const user = await this.usersRepository.findOne({ where: { id } })
+    if (!user) return await ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
+    //给新用户设置个默认密码：123456，用户登录后可以自行修改密码
+    user.password = '123456'
+    user.updateTime = new Date()
+    const res = await this.usersRepository.update(id, user)
+    if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前重置密码像失败，请稍后重试')
+    return await ResultData.ok()
+  }
+
+  // 更新头像
+  async updateAvatar(dto: RetrieveUserDto & UpdateUserAvatarDto) {
+    const { id, avatar } = dto
+    const result = await this.usersRepository
+      .createQueryBuilder('sys_user')
+      .update()
+      .set({
+        updateTime: new Date(),
+        avatar
+      })
+      .where('id = :id', { id: id })
+      .execute()
+    if (result.affected > 0) {
+      return await ResultData.ok(result)
+    } else {
+      return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新头像失败，请稍后重试')
+    }
   }
 
   /** 关键词模糊分页查询账户/昵称/备注&角色id、部门id对应的用户列表 */

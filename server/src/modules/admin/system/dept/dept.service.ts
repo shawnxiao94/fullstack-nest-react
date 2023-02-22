@@ -39,7 +39,7 @@ export class DeptService {
     deptEntity = clone(deptEntity, dto)
     if (dto.userId) {
       let leader = null
-      const resUser = await this.userService.findOne({ id: dto.userId, requireRoles: false, requireDept: false })
+      const resUser = await this.userService.findInfoById({ id: dto.userId, requireRoles: false, requireDept: false })
       leader = resUser?.data?.id ? resUser.data : null //注意返回结果类型得为数据库实体
       deptEntity.leader = leader
     }
@@ -77,7 +77,7 @@ export class DeptService {
     deptEntity = clone(deptEntity, dto, ['createTime'])
     if (dto.userId) {
       let leader = null
-      const resUser = await this.userService.findOne({ id: dto.userId, requireRoles: false, requireDept: false })
+      const resUser = await this.userService.findInfoById({ id: dto.userId, requireRoles: false, requireDept: false })
       leader = resUser?.data?.id ? resUser.data : null //注意返回结果类型得为数据库实体
       deptEntity.leader = leader
     }

@@ -9,14 +9,14 @@ import { $enum } from 'ts-enum-util'
 
 export class UpdateMenuDto extends PartialType(CreateMenuDto) {
   @ApiProperty({ description: '菜单id', required: true })
-  @IsNumberString({}, { message: 'id 类型错误' })
+  @IsString({ message: 'id 类型错误' })
   @IsNotEmpty()
   id: string
 }
 
 export class IdNameDto {
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   @ApiProperty({ description: '菜单id', required: true })
   id: string
 

@@ -13,7 +13,8 @@ export function authDirective(app: App) {
 	app.directive('auth', {
 		mounted(el, binding) {
 			const stores = useUserInfo();
-			if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) el.parentNode.removeChild(el);
+			if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value))
+				el.parentNode.removeChild(el);
 		},
 	});
 	// 多个权限验证，满足一个则显示（v-auths="[xxx,xxx]"）

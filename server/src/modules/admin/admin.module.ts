@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common'
 import { APP_GUARD, RouterModule } from '@nestjs/core'
+// import { AuthGuard } from '@/common/guards/auth.guard'
 import { SystemModule } from './system/system.module'
 import { ADMIN_PREFIX } from './admin.constants'
+import { LoginModule } from './login/login.module'
 
 /**
  * Admin模块，所有API都需要加入/admin前缀
@@ -13,15 +15,16 @@ import { ADMIN_PREFIX } from './admin.constants'
       {
         path: ADMIN_PREFIX,
         children: [{ path: 'sys', module: SystemModule }]
-      }
+      },
       // like this url /admin/captcha/img
-      // {
-      // path: ADMIN_PREFIX
-      // module: LoginModule
-      // }
+      {
+        path: ADMIN_PREFIX,
+        module: LoginModule
+      }
     ]),
     // component module
-    // LoginModule,
+    LoginModule,
+    // 系统基础模块
     SystemModule
   ],
   providers: [

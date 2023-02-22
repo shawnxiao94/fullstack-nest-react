@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Query, Req, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common'
+import { Controller, Get, Post, Body, Query, Put, Req, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common'
 import { UserService } from './user.service'
 import { ApiOkResponse, ApiOperation, ApiBearerAuth, ApiSecurity, ApiTags, ApiQuery } from '@nestjs/swagger'
 
 import { UserEntity } from './entities/user.entity'
 import { CreateUserDto, AddUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import { InfoSearchDto } from './dto/info-search.dto'
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto'
+import { InfoSearchDto, RetrieveUserDto, UpdateUserAvatarDto } from './dto/info-search.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
 
 import { ResultData } from '@/common/utils/result'
@@ -42,13 +42,37 @@ export class UserController {
     return this.userService.updateById(dto)
   }
 
+  // 根据 id 设置头像
+  @Put('avatar/:id')
+  @ApiOperation({ summary: '设置头像' })
+  async updateAvatar(@Param() params: RetrieveUserDto, @Body() updateUserAvatar: UpdateUserAvatarDto): Promise<ResultData> {
+    return await this.userService.updateAvatar({
+      id: params.id,
+      avatar: updateUserAvatar.avatar
+    })
+  }
+
+  // 根据 id 重置密码
+  @Put('resetPwd')
+  @ApiOperation({ summary: '重置密码' })
+  async resetPassword(@Body() dto: RetrieveUserDto): Promise<ResultData> {
+    return await this.userService.resetPassword(dto)
+  }
+
+  // 根据 id 更新密码
+  @Put('updatePwd')
+  @ApiOperation({ summary: '更新密码' })
+  async updatePassword(@Body() dto: UpdateUserPasswordDto): Promise<ResultData> {
+    return await this.userService.updatePassword(dto)
+  }
+
   @Post('infoById')
   @ApiOperation({
     summary: '根据ID查询用户信息及关联角色'
   })
   @ApiBearerAuth() // swagger文档设置token
-  async findOne(@Body() dto: InfoSearchDto): Promise<ResultData> {
-    return await this.userService.findOne(dto)
+  async findInfoById(@Body() dto: InfoSearchDto): Promise<ResultData> {
+    return await this.userService.findInfoById(dto)
   }
 
   @Post('list')

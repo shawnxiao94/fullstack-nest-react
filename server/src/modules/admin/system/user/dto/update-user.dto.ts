@@ -16,9 +16,11 @@ import {
   ArrayMinSize,
   ArrayMaxSize
 } from 'class-validator'
+import { Type } from 'class-transformer'
 import { ApiProperty } from '@nestjs/swagger'
 import { CreateUserDto } from './create-user.dto'
 import { isEmpty } from 'lodash'
+import { Match } from 'src/common/decorator/match.decorator'
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -62,13 +64,6 @@ export class UpdateUserDto {
   nickName: string
 
   @ApiProperty({
-    description: '头像url',
-    required: false
-  })
-  @IsString()
-  avatar: string
-
-  @ApiProperty({
     description: '备注',
     required: false
   })
@@ -82,4 +77,34 @@ export class UpdateUserDto {
   })
   @IsIn([0, 1])
   sex: number
+}
+
+export class UpdateUserPasswordDto {
+  @ApiProperty({
+    description: '用户ID',
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty({ message: '缺少用户id' })
+  @Type(() => String)
+  id: string
+
+  @ApiProperty({ description: '旧密码' })
+  @IsNotEmpty({ message: '请输入旧密码' })
+  @IsString()
+  @MinLength(6)
+  oldPassword: string
+
+  @ApiProperty({ description: '新密码' })
+  @IsNotEmpty({ message: '请输入新密码' })
+  @IsString()
+  @MinLength(6)
+  password: string
+
+  @ApiProperty({ description: '新密码' })
+  @IsNotEmpty({ message: '请再次输入新密码' })
+  @IsString()
+  @MinLength(6)
+  @Match('password', { message: '两次密码不一致' })
+  confirmPassword: string
 }
