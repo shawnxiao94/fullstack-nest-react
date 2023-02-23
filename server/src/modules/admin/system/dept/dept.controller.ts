@@ -1,5 +1,15 @@
-import { Controller, Get, Post, Body, Put, Patch, Param, Delete } from '@nestjs/common'
-import { ApiOperation, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  Param,
+  Delete
+} from '@nestjs/common'
+import { ApiOperation, ApiBearerAuth, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 
 import { ResultData } from '@/common/utils/result'
 import { ApiResult } from '@/common/decorator/api-result.decorator'
@@ -10,6 +20,7 @@ import { UpdateDeptDto } from './dto/update-dept.dto'
 import { FindListDto, InfoByIdDto, parentIdDto } from './dto/search.dto'
 
 @ApiTags('部门模块')
+@ApiBearerAuth()
 @Controller('dept')
 export class DeptController {
   constructor(private readonly deptService: DeptService) {}
@@ -40,6 +51,7 @@ export class DeptController {
 
   @ApiOperation({ summary: '根据父级id获取组织架构树', description: '根据父级id获取组织架构树' })
   @Post('findTree')
+  @UseInterceptors(ClassSerializerInterceptor)
   async findTree(@Body() dto: parentIdDto): Promise<ResultData> {
     return await this.deptService.findTree(dto)
   }

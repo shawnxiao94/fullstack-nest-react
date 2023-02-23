@@ -2,7 +2,13 @@ import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common'
 import { MenuService } from './menu.service'
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto, IdNameDto } from './dto/update-menu.dto'
-import { ListSearchDto, ListPageSearchDto, InfoIdDto, MenuIdsDto, parentMenuIdDto } from './dto/list-search.dto'
+import {
+  ListSearchDto,
+  ListPageSearchDto,
+  InfoIdDto,
+  MenuIdsDto,
+  parentMenuIdDto
+} from './dto/list-search.dto'
 
 import { ApiOperation, ApiOkResponse, ApiSecurity, ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { ResultData } from '@/common/utils/result'

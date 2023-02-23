@@ -5,6 +5,7 @@ import { UserEntity } from './entities/user.entity'
 import { Repository, In, Like, Equal, Brackets } from 'typeorm'
 import { RedisService } from '@/common/libs/redis/redis.service'
 import { ConfigService } from '@nestjs/config'
+import { UtilService } from '@/common/utils/utils.service'
 import { RoleService } from '../role/role.service'
 import { DeptService } from '../dept/dept.service'
 
@@ -31,7 +32,8 @@ export class UserService {
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
     private readonly redisService: RedisService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private utilService: UtilService
   ) {}
   /**
    * 账号密码注册
@@ -264,7 +266,23 @@ export class UserService {
     const res = await this.usersRepository.update(id, user) // 注意需要通过把更新的值赋值给实体进行更新，直接对象形式不行
     // update 的第二个参数实际上只是一个对象，它并不是我们的 entity，{ password } 这个对象上是没有 hashPassword 这个方法的。改传user的时候，它的原型上面才挂有这个方法。
     // const res = await this.usersRepository.update(id, { password: dto.password, updateTime: new Date() })
-    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前重置密码像失败，请稍后重试')
+    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
+    await this.upgradePasswordV(user.id)
+    return await ResultData.ok()
+  }
+
+  /**
+   * 直接更改管理员密码
+   */
+  async forceUpdatePassword(dto: UpdateUserPasswordDto): Promise<ResultData> {
+    const { id, password } = dto
+    const user = await this.usersRepository.findOne({ where: { id } })
+    if (!user) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
+    user.password = password
+    user.updateTime = new Date()
+    const res = await this.usersRepository.update(id, user) // 注意需要通过把更新的值赋值给实体进行更新，直接对象形式不行
+    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
+    await this.upgradePasswordV(user.id)
     return await ResultData.ok()
   }
 
@@ -278,6 +296,7 @@ export class UserService {
     user.updateTime = new Date()
     const res = await this.usersRepository.update(id, user)
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前重置密码像失败，请稍后重试')
+    await this.upgradePasswordV(user.id)
     return await ResultData.ok()
   }
 
@@ -355,5 +374,43 @@ export class UserService {
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已被删除')
     await this.usersRepository.remove(existing)
     return ResultData.ok()
+  }
+
+  /**
+   * 禁用用户
+   */
+  async forbidden(uid: string): Promise<void> {
+    await this.redisService.del(`admin:passwordVersion:${uid}`)
+    await this.redisService.del(`admin:token:${uid}`)
+    await this.redisService.del(`admin:menus:${uid}`)
+  }
+
+  /**
+   * 禁用多个用户
+   */
+  async multiForbidden(uids: number[]): Promise<void> {
+    if (uids) {
+      const pvs: string[] = []
+      const ts: string[] = []
+      const ms: string[] = []
+      uids.forEach((e) => {
+        pvs.push(`admin:passwordVersion:${e}`)
+        ts.push(`admin:token:${e}`)
+        ms.push(`admin:menus:${e}`)
+      })
+      await this.redisService.del(pvs)
+      await this.redisService.del(ts)
+      await this.redisService.del(ms)
+    }
+  }
+
+  /**
+   * 升级用户版本密码
+   */
+  async upgradePasswordV(id: string): Promise<void> {
+    const v = await this.redisService.get(`admin:passwordVersion:${id}`)
+    if (!this.utilService.isEmpty(v)) {
+      await this.redisService.set(`admin:passwordVersion:${id}`, String(parseInt(v, 10) + 1))
+    }
   }
 }

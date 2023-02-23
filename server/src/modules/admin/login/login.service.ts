@@ -76,7 +76,7 @@ export class LoginService {
     if (!(mobile || email || account)) {
       return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '账号/手机号/邮箱必须有一个值不空！')
     }
-    if (!!(await this.checkImgCaptcha(captchaId, verifyCode))) {
+    if (!(await this.checkImgCaptcha(captchaId, verifyCode))) {
       return await ResultData.fail(AppHttpCode.CAPTCHA_NOT_INVALID, '验证码不正确!')
     }
     const user = await this.userService.findInfoByAccountOrMobileOrEmail({ account, email, mobile })
@@ -103,5 +103,24 @@ export class LoginService {
     await this.redisService.set(`admin:menus:${user.id}`, JSON.stringify(menus))
     // await this.logService.saveLoginLog(user.id, ip, ua)
     return await ResultData.ok({ token })
+  }
+
+  /**
+   * 清除登录状态信息
+   */
+  async clearLoginStatus(uid: string): Promise<void> {
+    await this.userService.forbidden(uid)
+  }
+
+  async getRedisPasswordVersionById(id: string): Promise<string> {
+    return await this.redisService.get(`admin:passwordVersion:${id}`)
+  }
+
+  async getRedisTokenById(id: string): Promise<string> {
+    return await this.redisService.get(`admin:token:${id}`)
+  }
+
+  async getRedisPermsById(id: string): Promise<string> {
+    return await this.redisService.get(`admin:menus:${id}`)
   }
 }

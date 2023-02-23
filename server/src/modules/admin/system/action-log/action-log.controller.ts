@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
 import { ActionLogService } from './action-log.service'
 
-import { ApiOperation, ApiOkResponse, ApiSecurity, ApiTags, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { ResultData } from '@/common/utils/result'
 import { ApiResult } from '@/common/decorator/api-result.decorator'
 
@@ -9,6 +9,7 @@ import { CreateActionLogDto } from './dto/create-action-log.dto'
 import { UpdateActionLogDto } from './dto/update-action-log.dto'
 
 @ApiTags('日志模块')
+@ApiBearerAuth()
 @Controller('log')
 export class ActionLogController {
   constructor(private readonly actionLogService: ActionLogService) {}

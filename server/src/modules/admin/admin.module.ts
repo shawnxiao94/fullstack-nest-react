@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_GUARD, RouterModule } from '@nestjs/core'
-// import { AuthGuard } from '@/common/guards/auth.guard'
+import { AuthGuard } from './core/guards/auth.guard'
 import { SystemModule } from './system/system.module'
 import { ADMIN_PREFIX } from './admin.constants'
 import { LoginModule } from './login/login.module'
@@ -28,10 +28,10 @@ import { LoginModule } from './login/login.module'
     SystemModule
   ],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard
-    // }
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard
+    }
   ],
   exports: [SystemModule]
 })

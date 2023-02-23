@@ -1,13 +1,19 @@
 import { Controller, Get, Post, Body, Query, Patch, Put, Param, Delete, Req } from '@nestjs/common'
 import { RoleService } from './role.service'
-import { ApiOperation, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto, InfoArrRoleDto } from './dto/list-search.dto'
+import {
+  KeywordsListPageDto,
+  KeywordsListDto,
+  InfoRoleDto,
+  InfoArrRoleDto
+} from './dto/list-search.dto'
 import { ResultData } from '@/common/utils/result'
 import { ApiResult } from '@/common/decorator/api-result.decorator'
 
 @ApiTags('角色模块')
+@ApiBearerAuth()
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}

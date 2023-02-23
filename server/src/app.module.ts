@@ -1,16 +1,14 @@
-import { Module, Global, CacheModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ConfigurationKeyPaths, getConfiguration } from './config/configuration'
 
-import { JwtModule } from '@nestjs/jwt'
-
 import { RedisModule } from './common/libs/redis/redis.module'
 import { RedisClientOptions } from '@liaoliaots/nestjs-redis'
 import { AdminModule } from './modules/admin/admin.module'
+import { SharedModule } from './shared/shared.module'
 
-@Global()
 @Module({
   imports: [
     // 配置模块
@@ -36,16 +34,6 @@ import { AdminModule } from './modules/admin/admin.module'
         timezone: configService.get('database.timezone') // 时区
       })
     }),
-    // redis cache
-    CacheModule.register(),
-    // jwt
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService<ConfigurationKeyPaths>) => ({
-        secret: configService.get<string>('jwt.secret')
-      }),
-      inject: [ConfigService]
-    }),
     // libs redis
     RedisModule.forRootAsync(
       {
@@ -60,10 +48,12 @@ import { AdminModule } from './modules/admin/admin.module'
       },
       true
     ),
+    // custom module
+    SharedModule,
     AdminModule
   ],
   controllers: [],
   providers: [],
-  exports: [CacheModule, JwtModule]
+  exports: []
 })
 export class AppModule {}
