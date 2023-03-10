@@ -1,4 +1,14 @@
-import { Controller, Get, Query, Post, Body, Req, Headers, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Query,
+  Post,
+  Body,
+  Req,
+  Headers,
+  UseInterceptors,
+  ClassSerializerInterceptor
+} from '@nestjs/common'
 import { LoginService } from './login.service'
 import { CreateLoginDto } from './dto/create-login.dto'
 import { UpdateLoginDto } from './dto/update-login.dto'
@@ -28,8 +38,17 @@ export class LoginController {
   @ApiOkResponse({ type: ImageCaptcha })
   @Get('captcha/img')
   @Authorize()
-  async captchaByImg(@Query() dto: ImageCaptchaDto): Promise<ImageCaptcha> {
+  async captchaByImg(@Query() dto: ImageCaptchaDto): Promise<ResultData> {
     return await this.loginService.createImageCaptcha(dto)
+  }
+
+  @ApiOperation({
+    summary: '获取公钥'
+  })
+  @Get('publicKey')
+  @Authorize()
+  async getPublicKey(): Promise<ResultData> {
+    return await this.loginService.getPublicKeyApi()
   }
 
   @ApiOperation({
@@ -39,7 +58,12 @@ export class LoginController {
   @Post('login')
   // @LogDisabled()
   @Authorize()
-  async login(@Body() dto: LoginInfoDto, @IpAddress() clientIp: string, @Req() req: Request, @Headers('user-agent') ua: string): Promise<ResultData> {
+  async login(
+    @Body() dto: LoginInfoDto,
+    @IpAddress() clientIp: string,
+    @Req() req: Request,
+    @Headers('user-agent') ua: string
+  ): Promise<ResultData> {
     const ip = this.utilService.getReqIP(req)
     console.log('ip:', ip, clientIp, req.headers['user-agent'])
     return await this.loginService.loginSign(dto, ip || clientIp, ua)

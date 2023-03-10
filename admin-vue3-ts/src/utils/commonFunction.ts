@@ -31,11 +31,11 @@ export default function () {
 		return formatDate(new Date(time * 1000), 'HH:MM:SS');
 	};
 	// 小数格式化
-	const scaleFormat = (value: string = '0', scale: number = 4) => {
+	const scaleFormat = (value = '0', scale = 4) => {
 		return Number.parseFloat(value).toFixed(scale);
 	};
 	// 小数格式化
-	const scale2Format = (value: string = '0') => {
+	const scale2Format = (value = '0') => {
 		return Number.parseFloat(value).toFixed(2);
 	};
 	// 点击复制文本

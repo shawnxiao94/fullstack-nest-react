@@ -11,17 +11,17 @@ export function wavesDirective(app: App) {
 			el.classList.add('waves-effect');
 			binding.value && el.classList.add(`waves-${binding.value}`);
 			function setConvertStyle(obj: { [key: string]: unknown }) {
-				let style: string = '';
-				for (let i in obj) {
+				let style = '';
+				for (const i in obj) {
 					if (obj.hasOwnProperty(i)) style += `${i}:${obj[i]};`;
 				}
 				return style;
 			}
 			function onCurrentClick(e: { [key: string]: unknown }) {
-				let elDiv = document.createElement('div');
+				const elDiv = document.createElement('div');
 				elDiv.classList.add('waves-ripple');
 				el.appendChild(elDiv);
-				let styles = {
+				const styles = {
 					left: `${e.layerX}px`,
 					top: `${e.layerY}px`,
 					opacity: 1,
@@ -72,8 +72,14 @@ export function dragDirective(app: App) {
 
 			function down(e: any, type: string) {
 				// 鼠标按下，计算当前元素距离可视区的距离
-				const disX = type === 'pc' ? e.clientX - dragHeader.offsetLeft : e.touches[0].clientX - dragHeader.offsetLeft;
-				const disY = type === 'pc' ? e.clientY - dragHeader.offsetTop : e.touches[0].clientY - dragHeader.offsetTop;
+				const disX =
+					type === 'pc'
+						? e.clientX - dragHeader.offsetLeft
+						: e.touches[0].clientX - dragHeader.offsetLeft;
+				const disY =
+					type === 'pc'
+						? e.clientY - dragHeader.offsetTop
+						: e.touches[0].clientY - dragHeader.offsetTop;
 
 				// body当前宽度
 				const screenWidth = document.body.clientWidth;
@@ -117,7 +123,16 @@ export function dragDirective(app: App) {
 			}
 
 			function move(e: any, type: string, obj: any) {
-				let { disX, disY, minDragDomLeft, maxDragDomLeft, minDragDomTop, maxDragDomTop, styL, styT } = obj;
+				const {
+					disX,
+					disY,
+					minDragDomLeft,
+					maxDragDomLeft,
+					minDragDomTop,
+					maxDragDomTop,
+					styL,
+					styT,
+				} = obj;
 
 				// 通过事件委托，计算移动的距离
 				let left = type === 'pc' ? e.clientX - disX : e.touches[0].clientX - disX;

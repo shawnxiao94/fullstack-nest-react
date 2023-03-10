@@ -34,7 +34,7 @@ export function useTitle() {
 	const { themeConfig } = storeToRefs(stores);
 	nextTick(() => {
 		let webTitle = '';
-		let globalTitle: string = themeConfig.value.globalTitle;
+		const globalTitle: string = themeConfig.value.globalTitle;
 		const { path, meta } = router.currentRoute.value;
 		if (path === '/login') {
 			webTitle = <string>meta.title;
@@ -51,12 +51,17 @@ export function useTitle() {
  * @returns 返回当前 tagsViewName 名称
  */
 export function setTagsViewNameI18n(item: any) {
-	let tagsViewName: string = '';
+	let tagsViewName = '';
 	const { query, params, meta } = item;
 	if (query?.tagsViewName || params?.tagsViewName) {
-		if (/\/zh-cn|en|zh-tw\//.test(query?.tagsViewName) || /\/zh-cn|en|zh-tw\//.test(params?.tagsViewName)) {
+		if (
+			/\/zh-cn|en|zh-tw\//.test(query?.tagsViewName) ||
+			/\/zh-cn|en|zh-tw\//.test(params?.tagsViewName)
+		) {
 			// 国际化
-			const urlTagsParams = (query?.tagsViewName && JSON.parse(query?.tagsViewName)) || (params?.tagsViewName && JSON.parse(params?.tagsViewName));
+			const urlTagsParams =
+				(query?.tagsViewName && JSON.parse(query?.tagsViewName)) ||
+				(params?.tagsViewName && JSON.parse(params?.tagsViewName));
 			tagsViewName = urlTagsParams[i18n.global.locale.value];
 		} else {
 			// 非国际化
@@ -115,7 +120,7 @@ export function deepClone(obj: EmptyObjectType) {
 	} catch (error) {
 		newObj = {};
 	}
-	for (let attr in obj) {
+	for (const attr in obj) {
 		if (obj[attr] && typeof obj[attr] === 'object') {
 			newObj[attr] = deepClone(obj[attr]);
 		} else {

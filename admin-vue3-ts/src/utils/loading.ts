@@ -32,7 +32,7 @@ export const NextLoading = {
 		window.nextLoading = true;
 	},
 	// 移除 loading
-	done: (time: number = 0) => {
+	done: (time = 0) => {
 		nextTick(() => {
 			setTimeout(() => {
 				window.nextLoading = false;

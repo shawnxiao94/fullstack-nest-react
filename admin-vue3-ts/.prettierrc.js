@@ -34,6 +34,6 @@ module.exports = {
 	htmlWhitespaceSensitivity: 'css',
 	// Vue文件脚本和样式标签缩进
 	vueIndentScriptAndStyle: false,
-	// 换行符使用 lf 结尾是 可选值"<auto|lf|crlf|cr>"
-	endOfLine: 'lf',
+	// 换行符使用auto 结尾是 可选值"<auto|lf|crlf|cr>"
+	endOfLine: 'auto',
 };

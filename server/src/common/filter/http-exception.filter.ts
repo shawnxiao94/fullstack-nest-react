@@ -9,17 +9,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const exceptionResponse: any = exception.getResponse()
     let validMessage = ''
 
-    for (const key in exception) {
-      console.log(key, exception[key])
-    }
+    // for (const key in exception) {
+    //   console.log(key, exception[key])
+    // }
     if (typeof exceptionResponse === 'object') {
-      validMessage = typeof exceptionResponse.message === 'string' ? exceptionResponse.message : exceptionResponse.message[0]
+      validMessage =
+        typeof exceptionResponse.message === 'string'
+          ? exceptionResponse.message
+          : exceptionResponse.message[0]
     }
-    const message = exception.message ? exception.message : `${status >= 500 ? 'Service Error' : 'Client Error'}`
+    const message = exception.message
+      ? exception.message
+      : `${status >= 500 ? 'Service Error' : 'Client Error'}`
     const errorResponse = {
       data: {},
       message: validMessage || message,
-      code: -1
+      code: (exception as any)?.errorCode === 11001 ? 599 : -1
     }
 
     // 设置返回的状态码， 请求头，发送错误信息

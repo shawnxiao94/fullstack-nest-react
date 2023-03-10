@@ -52,16 +52,22 @@ export class UserService {
       }
     }
     // 防止重复创建 start
-    if (await this.usersRepository.findOne({ where: { account } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '帐号已存在，请调整后重新注册！')
+    if (await this.usersRepository.findOne({ where: { account } }))
+      return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '帐号已存在，请调整后重新注册！')
     if (mobile && validPhone(mobile)) {
       if (await this.usersRepository.findOne({ where: { mobile: mobile } })) {
-        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前手机号已存在，请调整后重新注册')
+        return ResultData.fail(
+          AppHttpCode.USER_CREATE_EXISTING,
+          '当前手机号已存在，请调整后重新注册'
+        )
       }
     }
     if (email && validEmail(email)) {
-      if (await this.usersRepository.findOne({ where: { email: email } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前邮箱已存在，请调整后重新注册')
+      if (await this.usersRepository.findOne({ where: { email: email } }))
+        return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前邮箱已存在，请调整后重新注册')
     }
-    if (password !== confirmPassword) return ResultData.fail(AppHttpCode.USER_PASSWORD_INVALID, '两次输入密码不一致，请重试')
+    if (password !== confirmPassword)
+      return ResultData.fail(AppHttpCode.USER_PASSWORD_INVALID, '两次输入密码不一致，请重试')
     // 防止重复创建 end
     // const hash = await this.getPasswordHash(password); //实体里面去加密密码更好
     // 注意得create生成下才能触发实体里的BeforeInsert生命周期对入库前的password进行加密
@@ -105,6 +111,7 @@ export class UserService {
     }
     //给新用户设置个默认密码：123456，用户登录后可以自行修改密码
     model.password = '123456'
+    model.type = 0
     model.createTime = new Date()
     model.updateTime = new Date()
     let userId
@@ -131,12 +138,18 @@ export class UserService {
                 .of(userId)
                 .set(dto.deptId)
                 .catch(async () => {
-                  return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户关联部门新增失败，请稍后重试')
+                  return await ResultData.fail(
+                    AppHttpCode.SERVICE_ERROR,
+                    '当前用户关联部门新增失败，请稍后重试'
+                  )
                 })
             }
           })
           .catch(async () => {
-            return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户关联角色新增失败，请稍后重试')
+            return await ResultData.fail(
+              AppHttpCode.SERVICE_ERROR,
+              '当前用户关联角色新增失败，请稍后重试'
+            )
           })
       })
     return ResultData.ok()
@@ -176,29 +189,47 @@ export class UserService {
             .of(id)
             .set(deptId ? deptId : null)
             .catch(async () => {
-              return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户关联部门更新失败，请稍后重试')
+              return await ResultData.fail(
+                AppHttpCode.SERVICE_ERROR,
+                '当前用户关联部门更新失败，请稍后重试'
+              )
             })
         })
         .catch(async (e) => {
-          return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户关联角色更新失败，请稍后重试')
+          return await ResultData.fail(
+            AppHttpCode.SERVICE_ERROR,
+            '当前用户关联角色更新失败，请稍后重试'
+          )
         })
       return await ResultData.ok(result)
     } else {
-      return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前用户非关联信息更新失败，请稍后重试')
+      return await ResultData.fail(
+        AppHttpCode.SERVICE_ERROR,
+        '当前用户非关联信息更新失败，请稍后重试'
+      )
     }
   }
 
   // 根据账号/手机/邮箱查询用户详情
-  async findInfoByAccountOrMobileOrEmail({ mobile, account, email }): Promise<UserEntity> {
+  async findInfoByAccountOrMobileOrEmail({ account }): Promise<UserEntity> {
     let res = null
-    if (mobile && validPhone(mobile)) {
-      res = await this.usersRepository.findOne({ where: { mobile }, relations: ['roles', 'dept'] })
-    }
     if (account) {
-      res = await this.usersRepository.findOne({ where: { account }, relations: ['roles', 'dept'] })
-    }
-    if (email && validEmail(email)) {
-      res = await this.usersRepository.findOne({ where: { email }, relations: ['roles', 'dept'] })
+      if (validPhone(account)) {
+        res = await this.usersRepository.findOne({
+          where: { mobile: account },
+          relations: ['roles', 'dept']
+        })
+      } else if (validEmail(account)) {
+        res = await this.usersRepository.findOne({
+          where: { email: account },
+          relations: ['roles', 'dept']
+        })
+      } else {
+        res = await this.usersRepository.findOne({
+          where: { account },
+          relations: ['roles', 'dept']
+        })
+      }
     }
     return res
   }
@@ -210,7 +241,11 @@ export class UserService {
     return ResultData.ok(user)
   }
 
-  async findOneByIdFn({ id, requireRoles = false, requireDept = false }: InfoSearchDto): Promise<UserEntity> {
+  async findOneByIdFn({
+    id,
+    requireRoles = false,
+    requireDept = false
+  }: InfoSearchDto): Promise<UserEntity> {
     let res = null
     if (requireRoles || requireDept) {
       if (requireRoles && requireDept) {
@@ -266,7 +301,8 @@ export class UserService {
     const res = await this.usersRepository.update(id, user) // 注意需要通过把更新的值赋值给实体进行更新，直接对象形式不行
     // update 的第二个参数实际上只是一个对象，它并不是我们的 entity，{ password } 这个对象上是没有 hashPassword 这个方法的。改传user的时候，它的原型上面才挂有这个方法。
     // const res = await this.usersRepository.update(id, { password: dto.password, updateTime: new Date() })
-    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
+    if (!res)
+      return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
     await this.upgradePasswordV(user.id)
     return await ResultData.ok()
   }
@@ -281,7 +317,8 @@ export class UserService {
     user.password = password
     user.updateTime = new Date()
     const res = await this.usersRepository.update(id, user) // 注意需要通过把更新的值赋值给实体进行更新，直接对象形式不行
-    if (!res) return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
+    if (!res)
+      return await ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前更新密码失败，请稍后重试')
     await this.upgradePasswordV(user.id)
     return await ResultData.ok()
   }

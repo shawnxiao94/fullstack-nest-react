@@ -114,7 +114,7 @@ export function verifyEnAndSpace(val: string) {
  */
 export function verifyAndSpace(val: string) {
 	// 匹配空格
-	let v = val.replace(/(^\s*)|(\s*$)/g, '');
+	const v = val.replace(/(^\s*)|(\s*$)/g, '');
 	// 返回结果
 	return v;
 }
@@ -146,7 +146,7 @@ export function verifyNumberComma(val: string) {
  */
 export function verifyTextColor(val: string, text = '', color = 'red') {
 	// 返回内容，添加颜色
-	let v = text.replace(new RegExp(val, 'gi'), `<span style='color: ${color}'>${val}</span>`);
+	const v = text.replace(new RegExp(val, 'gi'), `<span style='color: ${color}'>${val}</span>`);
 	// 返回结果
 	return v;
 }
@@ -161,7 +161,7 @@ export function verifyNumberCnUppercase(val: any, unit = '仟佰拾亿仟佰拾�
 	// 当前内容字符串添加 2个0，为什么??
 	val += '00';
 	// 返回某个指定的字符串值在字符串中首次出现的位置，没有出现，则该方法返回 -1
-	let lookup = val.indexOf('.');
+	const lookup = val.indexOf('.');
 	// substring：不包含结束下标内容，substr：包含结束下标内容
 	if (lookup >= 0) val = val.substring(0, lookup) + val.substr(lookup + 1, 2);
 	// 根据内容 val 的长度，截取返回对应大写
@@ -190,7 +190,8 @@ export function verifyNumberCnUppercase(val: any, unit = '仟佰拾亿仟佰拾�
  */
 export function verifyPhone(val: string) {
 	// false: 手机号码不正确
-	if (!/^((12[0-9])|(13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0|1,5-9]))\d{8}$/.test(val)) return false;
+	if (!/^((12[0-9])|(13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0|1,5-9]))\d{8}$/.test(val))
+		return false;
 	// true: 手机号码正确
 	else return true;
 }
@@ -238,7 +239,11 @@ export function verifyPassword(val: string) {
  */
 export function verifyPasswordPowerful(val: string) {
 	// false: 强密码不正确
-	if (!/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&\.*]+$)(?![a-zA-z\d]+$)(?![a-zA-z!@#$%^&\.*]+$)(?![\d!@#$%^&\.*]+$)[a-zA-Z\d!@#$%^&\.*]{6,16}$/.test(val))
+	if (
+		!/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&\.*]+$)(?![a-zA-z\d]+$)(?![a-zA-z!@#$%^&\.*]+$)(?![\d!@#$%^&\.*]+$)[a-zA-Z\d!@#$%^&\.*]{6,16}$/.test(
+			val
+		)
+	)
 		return false;
 	// true: 强密码正确
 	else return true;
@@ -259,7 +264,11 @@ export function verifyPasswordStrength(val: string) {
 	// 中：字母+数字，字母+特殊字符，数字+特殊字符
 	if (/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&\.*]+$)[a-zA-Z\d!@#$%^&\.*]{6,16}$/.test(val)) v = '中';
 	// 强：字母+数字+特殊字符
-	if (/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&\.*]+$)(?![a-zA-z\d]+$)(?![a-zA-z!@#$%^&\.*]+$)(?![\d!@#$%^&\.*]+$)[a-zA-Z\d!@#$%^&\.*]{6,16}$/.test(val))
+	if (
+		/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&\.*]+$)(?![a-zA-z\d]+$)(?![a-zA-z!@#$%^&\.*]+$)(?![\d!@#$%^&\.*]+$)[a-zA-Z\d!@#$%^&\.*]{6,16}$/.test(
+			val
+		)
+	)
 		v = '强';
 	// 返回结果
 	return v;
@@ -306,7 +315,12 @@ export function verifyEmail(val: string) {
  */
 export function verifyIdCard(val: string) {
 	// false: 身份证不正确
-	if (!/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(val)) return false;
+	if (
+		!/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(
+			val
+		)
+	)
+		return false;
 	// true: 身份证正确
 	else return true;
 }

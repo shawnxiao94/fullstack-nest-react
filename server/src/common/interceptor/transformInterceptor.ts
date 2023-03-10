@@ -1,4 +1,10 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpStatus } from '@nestjs/common'
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpStatus
+} from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 
@@ -37,7 +43,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
           res.statusCode = HttpStatus.OK
         }
         return {
-          code: 0,
+          code: 200,
           status: 'OK',
           data
         }

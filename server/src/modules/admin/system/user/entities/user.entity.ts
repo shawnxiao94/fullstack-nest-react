@@ -1,5 +1,15 @@
 import { BaseEntityModelWithUUIDPrimary } from '@/common/BaseEntityModel'
-import { Column, Entity, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm'
+import {
+  Column,
+  Entity,
+  BeforeInsert,
+  BeforeUpdate,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  JoinTable
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Exclude } from 'class-transformer'
@@ -55,11 +65,23 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
   @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '性别：0-女 1-男' })
   public sex: UserType
 
-  @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户', enum: $enum(UserType).getValues() })
-  @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '帐号类型：0-超管， 1-普通用户' })
+  @ApiProperty({
+    type: Number,
+    description: '帐号类型：0-后台管理员， 1-普通用户',
+    enum: $enum(UserType).getValues()
+  })
+  @Column({
+    type: 'tinyint',
+    default: UserType.ORDINARY_USER,
+    comment: '帐号类型：0-后台管理员， 1-普通用户'
+  })
   public type: UserType
 
-  @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用', enum: $enum(StatusValue).getValues() })
+  @ApiProperty({
+    type: String,
+    description: '所属状态: 1-有效，0-禁用',
+    enum: $enum(StatusValue).getValues()
+  })
   @Column({ type: 'tinyint', default: StatusValue.NORMAL, comment: '所属状态: 1-有效，0-禁用' })
   public status: StatusValue
 

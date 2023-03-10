@@ -10,9 +10,9 @@
  * @returns 返回拼接后的时间字符串
  */
 export function formatDate(date: Date, format: string): string {
-	let we = date.getDay(); // 星期
-	let z = getWeek(date); // 周
-	let qut = Math.floor((date.getMonth() + 3) / 3).toString(); // 季度
+	const we = date.getDay(); // 星期
+	const z = getWeek(date); // 周
+	const qut = Math.floor((date.getMonth() + 3) / 3).toString(); // 季度
 	const opt: { [key: string]: string } = {
 		'Y+': date.getFullYear().toString(), // 年
 		'm+': (date.getMonth() + 1).toString(), // 月(月份从0开始，要+1)
@@ -40,13 +40,25 @@ export function formatDate(date: Date, format: string): string {
 		'4': '四',
 	};
 	if (/(W+)/.test(format))
-		format = format.replace(RegExp.$1, RegExp.$1.length > 1 ? (RegExp.$1.length > 2 ? '星期' + week[we] : '周' + week[we]) : week[we]);
-	if (/(Q+)/.test(format)) format = format.replace(RegExp.$1, RegExp.$1.length == 4 ? '第' + quarter[qut] + '季度' : quarter[qut]);
-	if (/(Z+)/.test(format)) format = format.replace(RegExp.$1, RegExp.$1.length == 3 ? '第' + z + '周' : z + '');
-	for (let k in opt) {
-		let r = new RegExp('(' + k + ')').exec(format);
+		format = format.replace(
+			RegExp.$1,
+			RegExp.$1.length > 1 ? (RegExp.$1.length > 2 ? '星期' + week[we] : '周' + week[we]) : week[we]
+		);
+	if (/(Q+)/.test(format))
+		format = format.replace(
+			RegExp.$1,
+			RegExp.$1.length == 4 ? '第' + quarter[qut] + '季度' : quarter[qut]
+		);
+	if (/(Z+)/.test(format))
+		format = format.replace(RegExp.$1, RegExp.$1.length == 3 ? '第' + z + '周' : z + '');
+	for (const k in opt) {
+		const r = new RegExp('(' + k + ')').exec(format);
 		// 若输入的长度不为1，则前面补零
-		if (r) format = format.replace(r[1], RegExp.$1.length == 1 ? opt[k] : opt[k].padStart(RegExp.$1.length, '0'));
+		if (r)
+			format = format.replace(
+				r[1],
+				RegExp.$1.length == 1 ? opt[k] : opt[k].padStart(RegExp.$1.length, '0')
+			);
 	}
 	return format;
 }
@@ -57,18 +69,18 @@ export function formatDate(date: Date, format: string): string {
  * @returns 返回第几周数字值
  */
 export function getWeek(dateTime: Date): number {
-	let temptTime = new Date(dateTime.getTime());
+	const temptTime = new Date(dateTime.getTime());
 	// 周几
-	let weekday = temptTime.getDay() || 7;
+	const weekday = temptTime.getDay() || 7;
 	// 周1+5天=周六
 	temptTime.setDate(temptTime.getDate() - weekday + 1 + 5);
 	let firstDay = new Date(temptTime.getFullYear(), 0, 1);
-	let dayOfWeek = firstDay.getDay();
+	const dayOfWeek = firstDay.getDay();
 	let spendDay = 1;
 	if (dayOfWeek != 0) spendDay = 7 - dayOfWeek + 1;
 	firstDay = new Date(temptTime.getFullYear(), 0, 1 + spendDay);
-	let d = Math.ceil((temptTime.valueOf() - firstDay.valueOf()) / 86400000);
-	let result = Math.ceil(d / 7);
+	const d = Math.ceil((temptTime.valueOf() - firstDay.valueOf()) / 86400000);
+	const result = Math.ceil(d / 7);
 	return result;
 }
 
@@ -83,7 +95,7 @@ export function getWeek(dateTime: Date): number {
  * @description param 3天：   60 * 60* 24 * 1000 * 3
  * @returns 返回拼接后的时间字符串
  */
-export function formatPast(param: string | Date, format: string = 'YYYY-mm-dd'): string {
+export function formatPast(param: string | Date, format = 'YYYY-mm-dd'): string {
 	// 传入格式处理、存储转换值
 	let t: any, s: number;
 	// 获取js 时间戳
@@ -113,7 +125,7 @@ export function formatPast(param: string | Date, format: string = 'YYYY-mm-dd'):
 		return `${s}天前`;
 	} else {
 		// 超过3天
-		let date = typeof param === 'string' || 'object' ? new Date(param) : param;
+		const date = typeof param === 'string' || 'object' ? new Date(param) : param;
 		return formatDate(date, format);
 	}
 }
@@ -125,7 +137,7 @@ export function formatPast(param: string | Date, format: string = 'YYYY-mm-dd'):
  * @returns 返回拼接后的时间字符串
  */
 export function formatAxis(param: Date): string {
-	let hour: number = new Date(param).getHours();
+	const hour: number = new Date(param).getHours();
 	if (hour < 6) return '凌晨好';
 	else if (hour < 9) return '早上好';
 	else if (hour < 12) return '上午好';

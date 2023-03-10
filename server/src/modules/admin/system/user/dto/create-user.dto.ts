@@ -136,9 +136,6 @@ export class AddUserDto {
   })
   @IsArray({ message: 'roleIds 类型错误，正确类型 string[]' })
   @IsString({ each: true, message: '角色组内类型错误' })
-  @IsNotEmpty({ each: true, message: '角色id 不能为空' })
-  @ArrayNotEmpty()
-  @ArrayMinSize(1)
   roleIds: string[]
 
   @ApiProperty({

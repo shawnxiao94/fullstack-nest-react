@@ -1,0 +1,25 @@
+.user-container {
+  display: flex;
+  height: calc(100vh - 150px);
+
+  .dept-wrap {
+    width: 200px;
+  }
+
+  .user-wrap {
+    flex: 1;
+    margin-left: 10px;
+
+    .search-wrap {
+      margin-bottom: 10px;
+
+      .ant-form-item {
+        margin-bottom: 5px;
+      }
+    }
+
+    .btn-wrap {
+      margin-bottom: 10px;
+    }
+  }
+}

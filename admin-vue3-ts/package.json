@@ -12,7 +12,7 @@
         "prettier": "prettier --write",
         "commit:comment": "引导设置规范化的提交信息",
         "commit": "git-cz",
-        "lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue src/"
+        "lint-fix": "eslint --fix --ext .js --ext .jsx --ext .ts --ext .vue src/"
     },
     "dependencies": {
         "@element-plus/icons-vue": "^2.0.10",

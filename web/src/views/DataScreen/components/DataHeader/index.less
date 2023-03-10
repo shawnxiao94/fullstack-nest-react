@@ -1,0 +1,39 @@
+.data-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: url('@/assets/images/line1.png') no-repeat bottom center;
+
+  .time {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    font-size: 26px;
+    transform: translateY(-50%);
+    /* stylelint-disable-next-line selector-class-pattern */
+    .timeIcon {
+      margin-right: 8px;
+      color: #0bbcfa;
+    }
+  }
+
+  .title {
+    margin-bottom: 8px;
+    font-size: 34px;
+    background: url('@/assets/images/line2.png') no-repeat bottom center;
+  }
+
+  .desc {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    color: #77fbe3;
+    transform: translateY(-50%);
+    /* stylelint-disable-next-line selector-class-pattern */
+    .setIcon {
+      margin-right: 8px;
+    }
+  }
+}

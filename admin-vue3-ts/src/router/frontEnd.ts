@@ -66,10 +66,13 @@ export async function frontEndsResetRoute() {
  * @returns 返回替换后的路由数组
  */
 export function setFilterRouteEnd() {
-	let filterRouteEnd: any = formatTwoStageRoutes(formatFlatteningRoutes(dynamicRoutes));
+	const filterRouteEnd: any = formatTwoStageRoutes(formatFlatteningRoutes(dynamicRoutes));
 	// notFoundAndNoPower 防止 404、401 不在 layout 布局中，不设置的话，404、401 界面将全屏显示
 	// 关联问题 No match found for location with path 'xxx'
-	filterRouteEnd[0].children = [...setFilterRoute(filterRouteEnd[0].children), ...notFoundAndNoPower];
+	filterRouteEnd[0].children = [
+		...setFilterRoute(filterRouteEnd[0].children),
+		...notFoundAndNoPower,
+	];
 	return filterRouteEnd;
 }
 
@@ -83,7 +86,7 @@ export function setFilterRouteEnd() {
 export function setFilterRoute(chil: any) {
 	const stores = useUserInfo(pinia);
 	const { userInfos } = storeToRefs(stores);
-	let filterRoute: any = [];
+	const filterRoute: any = [];
 	chil.forEach((route: any) => {
 		if (route.meta.roles) {
 			route.meta.roles.forEach((metaRoles: any) => {
@@ -105,9 +108,11 @@ export function setCacheTagsViewRoutes() {
 	const stores = useUserInfo(pinia);
 	const storesTagsView = useTagsViewRoutes(pinia);
 	const { userInfos } = storeToRefs(stores);
-	let rolesRoutes = setFilterHasRolesMenu(dynamicRoutes, userInfos.value.roles);
+	const rolesRoutes = setFilterHasRolesMenu(dynamicRoutes, userInfos.value.roles);
 	// 添加到 pinia setTagsViewRoutes 中
-	storesTagsView.setTagsViewRoutes(formatTwoStageRoutes(formatFlatteningRoutes(rolesRoutes))[0].children);
+	storesTagsView.setTagsViewRoutes(
+		formatTwoStageRoutes(formatFlatteningRoutes(rolesRoutes))[0].children
+	);
 }
 
 /**
@@ -119,7 +124,9 @@ export function setFilterMenuAndCacheTagsViewRoutes() {
 	const stores = useUserInfo(pinia);
 	const storesRoutesList = useRoutesList(pinia);
 	const { userInfos } = storeToRefs(stores);
-	storesRoutesList.setRoutesList(setFilterHasRolesMenu(dynamicRoutes[0].children, userInfos.value.roles));
+	storesRoutesList.setRoutesList(
+		setFilterHasRolesMenu(dynamicRoutes[0].children, userInfos.value.roles)
+	);
 	setCacheTagsViewRoutes();
 }
 
@@ -130,7 +137,8 @@ export function setFilterMenuAndCacheTagsViewRoutes() {
  * @returns 返回对比后有权限的路由项
  */
 export function hasRoles(roles: any, route: any) {
-	if (route.meta && route.meta.roles) return roles.some((role: any) => route.meta.roles.includes(role));
+	if (route.meta && route.meta.roles)
+		return roles.some((role: any) => route.meta.roles.includes(role));
 	else return true;
 }
 

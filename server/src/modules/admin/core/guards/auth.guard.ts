@@ -4,7 +4,12 @@ import { JwtService } from '@nestjs/jwt'
 import { Request } from 'express'
 import { isEmpty } from 'lodash'
 import { ApiException } from 'src/common/exceptions/api.exception'
-import { ADMIN_PREFIX, ADMIN_USER, PERMISSION_OPTIONAL_KEY_METADATA, AUTHORIZE_KEY_METADATA } from 'src/modules/admin/admin.constants'
+import {
+  ADMIN_PREFIX,
+  ADMIN_USER,
+  PERMISSION_OPTIONAL_KEY_METADATA,
+  AUTHORIZE_KEY_METADATA
+} from 'src/modules/admin/admin.constants'
 import { LoginService } from 'src/modules/admin/login/login.service'
 
 /**
@@ -12,7 +17,11 @@ import { LoginService } from 'src/modules/admin/login/login.service'
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private reflector: Reflector, private jwtService: JwtService, private loginService: LoginService) {}
+  constructor(
+    private reflector: Reflector,
+    private jwtService: JwtService,
+    private loginService: LoginService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 检测是否是开放类型的，例如获取验证码类型的接口不需要校验，可以加入@Authorize可自动放过
@@ -49,7 +58,10 @@ export class AuthGuard implements CanActivate {
       throw new ApiException(11002)
     }
     // 注册该注解，Api则放行检测
-    const notNeedPerm = this.reflector.get<boolean>(PERMISSION_OPTIONAL_KEY_METADATA, context.getHandler())
+    const notNeedPerm = this.reflector.get<boolean>(
+      PERMISSION_OPTIONAL_KEY_METADATA,
+      context.getHandler()
+    )
     // Token校验身份通过，判断是否需要权限的url，不需要权限则pass
     if (notNeedPerm) {
       return true

@@ -1,0 +1,150 @@
+.login-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 550px;
+  height: 100%;
+  min-height: 500px;
+  background-image: url('@/assets/images/login_bg.svg');
+  background-position: 50%;
+  background-size: 100% 100%;
+  background-size: cover;
+
+  .dark {
+    position: absolute;
+    top: 5%;
+    right: 3.2%;
+  }
+
+  .login-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    box-sizing: border-box;
+    width: 96%;
+    height: 94%;
+    padding: 0 4% 0 20px;
+    overflow: hidden;
+    background-image: url(https://gw.alipayobjects.com/zos/rmsportal/TVYTbAXWheQpRcWDaDMu.svg);
+    background-repeat: no-repeat;
+    border-radius: 10px;
+
+    .login-left {
+      width: 750px;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .login-form {
+      padding: 40px 45px 25px;
+      border-radius: 10px;
+
+      .login-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+
+        .login-icon {
+          width: 70px;
+        }
+
+        .logo-text {
+          padding-left: 25px;
+          font-weight: bold;
+          font-size: 48px;
+          white-space: nowrap;
+        }
+      }
+
+      .ant-form-item {
+        height: 70px;
+        margin-bottom: 0;
+
+        .ant-input-prefix {
+          margin-right: 10px;
+        }
+
+        .ant-input-affix-wrapper-lg {
+          padding: 8.3px 11px;
+        }
+
+        .ant-input-affix-wrapper,
+        .ant-input-lg {
+          font-size: 14px;
+        }
+
+        .ant-input-affix-wrapper {
+          color: #bfbfbf;
+        }
+
+        &-row {
+          .ant-form-item-control {
+            &-input {
+              &-content {
+                height: 100%;
+
+                .captcha-box {
+                  display: flex;
+                  height: 100%;
+
+                  .captcha-img {
+                    width: 80px;
+                    height: 100%;
+
+                    img {
+                      display: block;
+                      width: 100%;
+                      height: 100%;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        &.info-box {
+          height: 40px;
+
+          .ant-form-item-control {
+            &-input {
+              &-content {
+                position: relative;
+
+                .login-form-forgot {
+                  position: absolute;
+                  top: 0;
+                  right: 0;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .login-btn {
+        width: 100%;
+        margin-top: 10px;
+        white-space: nowrap;
+
+        .ant-form-item-control-input-content {
+          display: flex;
+          justify-content: space-between;
+
+          .ant-btn {
+            width: 180px;
+
+            span {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

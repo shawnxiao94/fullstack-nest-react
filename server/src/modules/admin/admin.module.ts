@@ -27,12 +27,12 @@ import { LoginModule } from './login/login.module'
     // 系统基础模块
     SystemModule
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard
-    }
-  ],
+  // providers: [
+  //   {
+  //     provide: APP_GUARD,
+  //     useClass: AuthGuard
+  //   }
+  // ],
   exports: [SystemModule]
 })
 export class AdminModule {}
