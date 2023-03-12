@@ -1,11 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsArray, IsOptional, Length, IsString, IsNumber, IsNumberString, IsNotEmpty, Min, MinLength, ValidateIf } from 'class-validator'
+import {
+  IsBoolean,
+  IsIn,
+  IsArray,
+  IsOptional,
+  Length,
+  IsString,
+  IsNumber,
+  IsNumberString,
+  IsNotEmpty,
+  Min,
+  MinLength,
+  ValidateIf
+} from 'class-validator'
 import { $enum } from 'ts-enum-util'
 import { MenuType } from '@/common/enums/common.enum'
 import { MenuPermDto } from './menu-perm.dto'
 
 export class CreateMenuDto {
-  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', default: 1, enum: $enum(MenuType).getValues(), required: true })
+  @ApiProperty({
+    description: '菜单类型 1-菜单/目录 2-tabs 3-按钮',
+    default: 1,
+    enum: $enum(MenuType).getValues(),
+    required: true
+  })
   @IsNumber({}, { message: 'type 类型错误' })
   @IsIn($enum(MenuType).getValues(), { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
   @IsNotEmpty()
@@ -18,7 +36,7 @@ export class CreateMenuDto {
 
   @ApiProperty({ description: '路由/按钮名称(code)', required: true })
   @IsString()
-  @Length(2, 20, { message: 'name 字符长度在 2~20' })
+  @Length(2, 50, { message: 'name 字符长度在 2~50' })
   readonly name: string
 
   @ApiProperty({ description: '路由地址', required: false })
@@ -78,10 +96,16 @@ export class CreateMenuDto {
   @ValidateIf((o) => o.type !== 3)
   readonly openMode: number
 
-  @ApiProperty({ description: '是否外链，开启外链条件，1、isLink: 链接地址不为空 2、isIframe:false', required: false })
+  @ApiProperty({
+    description: '是否外链，开启外链条件，1、isLink: 链接地址不为空 2、isIframe:false',
+    required: false
+  })
   isLink: string
 
   @IsBoolean()
-  @ApiProperty({ description: '是否内嵌窗口，开启条件，1、isIframe:true 2、isLink：链接地址不为空', required: false })
+  @ApiProperty({
+    description: '是否内嵌窗口，开启条件，1、isIframe:true 2、isLink：链接地址不为空',
+    required: false
+  })
   isIframe: boolean
 }

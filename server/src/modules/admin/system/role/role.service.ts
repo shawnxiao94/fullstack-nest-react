@@ -6,7 +6,12 @@ import { RoleEntity } from './entities/role.entity'
 import { MenuEntity } from '../menu/entities/menu.entity'
 import { MenuService } from '../menu/menu.service'
 import { CreateRoleDto } from './dto/create-role.dto'
-import { KeywordsListPageDto, KeywordsListDto, InfoRoleDto, InfoArrRoleDto } from './dto/list-search.dto'
+import {
+  KeywordsListPageDto,
+  KeywordsListDto,
+  InfoRoleDto,
+  InfoArrRoleDto
+} from './dto/list-search.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 
 import { ResultData } from '@/common/utils/result'
@@ -25,7 +30,8 @@ export class RoleService {
   // 新增角色
   async create(dto: CreateRoleDto): Promise<ResultData> {
     // 防止重复创建 start
-    if (await this.roleRepository.findOne({ where: { code: dto.code } })) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色已存在，请调整后重新新增！')
+    if (await this.roleRepository.findOne({ where: { code: dto.code } }))
+      return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色已存在，请调整后重新新增！')
     // 防止重复创建 end
     let roleEntity = new RoleEntity()
     roleEntity = clone(roleEntity, dto)
@@ -42,7 +48,11 @@ export class RoleService {
   }
 
   // 根据id获取角色信息及关联的菜单
-  async findInfoById({ id, requireMenus = false, treeType = false }: InfoRoleDto): Promise<ResultData> {
+  async findInfoById({
+    id,
+    requireMenus = false,
+    treeType = false
+  }: InfoRoleDto): Promise<ResultData> {
     let res = null
     if (requireMenus) {
       res = await this.roleRepository.find({ where: { id }, relations: ['menus'] })
@@ -58,7 +68,11 @@ export class RoleService {
   }
 
   // 根据ids数组获取角色信息及关联的菜单
-  async findInfosByIds({ ids, requireMenus = false, treeType = false }: InfoArrRoleDto): Promise<ResultData> {
+  async findInfosByIds({
+    ids,
+    requireMenus = false,
+    treeType = false
+  }: InfoArrRoleDto): Promise<ResultData> {
     let res = null
     if (requireMenus) {
       res = await this.roleRepository.find({ where: { id: In(ids) }, relations: ['menus'] })
@@ -117,16 +131,26 @@ export class RoleService {
   /** 模糊分页查询角色列表 */
   async findListPage(query: KeywordsListPageDto): Promise<ResultData> {
     const { pageNumber = 1, pageSize = 10, keywords, orderBy } = query
-    const qb = await this.roleRepository.createQueryBuilder('sys_role').orderBy('sys_role.update_time', 'DESC')
+    const qb = await this.roleRepository
+      .createQueryBuilder('sys_role')
+      .orderBy('sys_role.update_time', 'DESC')
     // 9827e1bc-dfb8-458d-8ebd-679358999d93超级管理员id
     // qb.where('sys_role.id != :id', { id: '9827e1bc-dfb8-458d-8ebd-679358999d93' })
-    qb.andWhere('sys_role.name LIKE :name', { name: `%${keywords}%` }).orWhere('sys_role.remark LIKE :remark', { remark: `%${keywords}%` })
+    qb.andWhere('sys_role.name LIKE :name', { name: `%${keywords}%` }).orWhere(
+      'sys_role.remark LIKE :remark',
+      { remark: `%${keywords}%` }
+    )
     qb.orderBy('sys_role.create_time', 'DESC')
     const count = await qb.getCount()
     qb.limit(pageSize)
     qb.offset(pageSize * (pageNumber - 1))
     const roles = await qb.getMany()
-    return ResultData.ok({ list: roles, total: count })
+    return ResultData.ok({
+      data: roles,
+      total: count,
+      pageSize,
+      current: pageNumber
+    })
   }
 
   /** 查询角色列表 */

@@ -7,6 +7,7 @@ import Login from '@/views/Login'
 
 export const asyncRoute: RouteObject[] = [
   {
+    path: '/',
     element: <BasicLayout />,
     meta: {
       title: '首页'
@@ -18,13 +19,14 @@ export const asyncRoute: RouteObject[] = [
         meta: {
           requiresAuth: true,
           title: '首页',
-          key: 'home',
+          key: 'Home',
           icon: 'HomeOutlined'
         }
       }
     ]
   },
   {
+    path: '/dataScreen',
     meta: {
       title: '数据大屏'
     },
@@ -35,35 +37,37 @@ export const asyncRoute: RouteObject[] = [
         meta: {
           requiresAuth: true,
           title: '数据大屏',
-          key: 'dataScreen',
+          key: 'DataScreen',
           icon: 'AreaChartOutlined'
         }
       }
     ]
   },
   {
+    path: '/assembly',
     element: <BasicLayout />,
     meta: {
       title: '常用组件'
     },
     children: [
       {
-        path: '/assembly/guide',
+        path: '/assembly/Guide',
         element: lazyLoad(React.lazy(() => import('@/views/AssemblyGuide'))),
         meta: {
           requiresAuth: true,
           title: '引导页',
-          key: 'guide'
+          key: 'AssemblyGuide'
         }
       }
     ]
   },
   {
+    path: '/echarts',
     element: <BasicLayout />,
     meta: {
       requiresAuth: true,
       title: '数据图表',
-      key: 'echarts'
+      key: 'Echarts'
     },
     children: [
       {
@@ -72,7 +76,7 @@ export const asyncRoute: RouteObject[] = [
         meta: {
           requiresAuth: true,
           title: '水型图',
-          key: '/echarts/waterChart'
+          key: 'EchartsWaterChart'
         }
       },
       {
@@ -81,7 +85,45 @@ export const asyncRoute: RouteObject[] = [
         meta: {
           requiresAuth: true,
           title: '柱状图',
-          key: '/echarts/columnChart'
+          key: 'EchartsWaterChartColumnChart'
+        }
+      }
+    ]
+  },
+  {
+    path: '/systemManagement',
+    element: <BasicLayout />,
+    meta: {
+      requiresAuth: true,
+      title: '系统管理',
+      key: 'systemManagement'
+    },
+    children: [
+      {
+        path: '/systemManagement/userManagement',
+        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/UserManagement'))),
+        meta: {
+          requiresAuth: true,
+          title: '用户管理',
+          key: 'SystemManagementUserManagement'
+        }
+      },
+      {
+        path: '/systemManagement/roleManagement',
+        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/RoleManagement'))),
+        meta: {
+          requiresAuth: true,
+          title: '角色管理',
+          key: 'SystemManagementRoleManagement'
+        }
+      },
+      {
+        path: '/systemManagement/menuManagement',
+        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/MenuManagement'))),
+        meta: {
+          requiresAuth: true,
+          title: '菜单管理',
+          key: 'SystemManagementMenuManagement'
         }
       }
     ]
@@ -99,7 +141,7 @@ export const rootRouter: RouteObject[] = [
     meta: {
       requiresAuth: false,
       title: '登录页',
-      key: 'login'
+      key: 'Login'
     }
   },
   ...asyncRoute,
@@ -109,7 +151,7 @@ export const rootRouter: RouteObject[] = [
     meta: {
       requiresAuth: true,
       title: '403页面',
-      key: '403'
+      key: 'ErrorMessage403'
     }
   },
   {
@@ -118,7 +160,7 @@ export const rootRouter: RouteObject[] = [
     meta: {
       requiresAuth: false,
       title: '404页面',
-      key: '404'
+      key: 'ErrorMessage404'
     }
   },
   {
@@ -127,7 +169,7 @@ export const rootRouter: RouteObject[] = [
     meta: {
       requiresAuth: false,
       title: '500页面',
-      key: '500'
+      key: 'ErrorMessage500'
     }
   },
   {

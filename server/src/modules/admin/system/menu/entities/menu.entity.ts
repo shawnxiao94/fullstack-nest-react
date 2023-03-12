@@ -35,7 +35,10 @@ export class MenuEntity extends BaseEntityModelWithUUIDPrimary {
   @Column({ comment: '重定向路径', nullable: true })
   redirect: string
 
-  @Column({ comment: '是否外链，开启外链条件，`1、isLink: 链接地址不为空 2、isIframe:false`', nullable: true })
+  @Column({
+    comment: '是否外链，开启外链条件，`1、isLink: 链接地址不为空 2、isIframe:false`',
+    nullable: true
+  })
   isLink: string
 
   @Column({ comment: '是否内嵌窗口，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`' })

@@ -387,7 +387,12 @@ export class UserService {
     qb.limit(pageSize)
     qb.offset(pageSize * (pageNumber - 1))
     const users = await qb.getMany()
-    return ResultData.ok({ list: users, total: count })
+    return ResultData.ok({
+      data: users,
+      total: count,
+      pageSize,
+      current: pageNumber
+    })
 
     // const where = {
     //   ...(status ? { status } : null),

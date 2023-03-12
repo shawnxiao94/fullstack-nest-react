@@ -4,7 +4,13 @@ import { Repository, Equal, Brackets, Like, In } from 'typeorm'
 
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto, IdNameDto } from './dto/update-menu.dto'
-import { ListSearchDto, ListPageSearchDto, InfoIdDto, MenuIdsDto, parentMenuIdDto } from './dto/list-search.dto'
+import {
+  ListSearchDto,
+  ListPageSearchDto,
+  InfoIdDto,
+  MenuIdsDto,
+  parentMenuIdDto
+} from './dto/list-search.dto'
 
 import { ResultData } from '@/common/utils/result'
 
@@ -24,7 +30,8 @@ export class MenuService {
     if (dto.parentId !== 'root') {
       // 查询当前父级菜单是否存在
       const parentMenu = await this.menuRepository.findOne({ where: { id: dto.parentId } })
-      if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
+      if (!parentMenu)
+        return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
     if (~~dto.type !== 3 && !dto.path.length) {
       return ResultData.fail(AppHttpCode.SERVICE_ERROR, '非按钮的菜单的path不能为空')
@@ -130,7 +137,7 @@ export class MenuService {
       skip: pageNumber - 1,
       take: pageSize
     })
-    return ResultData.ok({ list: data[0], total: data[1] })
+    return ResultData.ok({ data: data[0], total: data[1], pageSize, current: pageNumber })
   }
 
   // 获取菜单Tree
@@ -142,7 +149,11 @@ export class MenuService {
 
   // 根据父id递归获取菜单Tree
   async loopMenuTree(parentId: string): Promise<MenuEntity[]> {
-    const result = await this.menuRepository.createQueryBuilder().where({ parentId }).orderBy('sort', 'ASC').getMany()
+    const result = await this.menuRepository
+      .createQueryBuilder()
+      .where({ parentId })
+      .orderBy('sort', 'ASC')
+      .getMany()
     const treeList: MenuEntity[] = new Array<MenuEntity>()
     for await (const info of result) {
       const children = await this.loopMenuTree(info.id)

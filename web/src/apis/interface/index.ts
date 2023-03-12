@@ -47,3 +47,34 @@ export namespace Login {
     [propName: string]: any
   }
 }
+// * 系统管理
+export namespace SystemManagement {
+  export interface ReqUserManageForm {
+    pageSize: number
+    pageNumber: number
+    keywords: string
+    status: number
+    roleIds: string[]
+    deptId: string
+  }
+  export interface ResUserManageList {
+    data: any[]
+  }
+  export interface ReqRoleManagementForm {
+    pageSize: number
+    pageNumber: number
+    keywords: string
+    orderBy?: string
+  }
+  export interface ResRoleManagementList {
+    data: any[]
+  }
+  export interface ReqMenuManagementForm {
+    pageSize: number
+    pageNumber: number
+    keywords: string
+  }
+  export interface ResMenuManagementList {
+    data: any[]
+  }
+}

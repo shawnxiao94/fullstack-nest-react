@@ -30,5 +30,5 @@ export const getAuthorButtons = () => {
 
 // * 获取菜单列表
 export const getMenuList = params => {
-  return http.post<Menu.MenuOptions[]>(basePath + '/admin/sys/role/infosByIds', params)
+  return http.post<Menu.MenuOptions[]>('./mock/nestApi/admin/sys/role/infosByIds', params)
 }

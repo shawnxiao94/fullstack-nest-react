@@ -29,17 +29,26 @@ export class DeptService {
     // 查询父部门是否存在
     if (dto.parentId !== 'root') {
       const existing = await this.deptRepo.findOne({ where: { id: dto.parentId } })
-      if (!existing) return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '上级部门不存在或已被删除，请修改后重新添加')
+      if (!existing)
+        return ResultData.fail(
+          AppHttpCode.DEPT_NOT_FOUND,
+          '上级部门不存在或已被删除，请修改后重新添加'
+        )
     }
     // 防止重复创建 start
-    if (await this.deptRepo.findOne({ where: { code: dto.code } })) return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '部门已存在，请调整后重新新增！')
+    if (await this.deptRepo.findOne({ where: { code: dto.code } }))
+      return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '部门已存在，请调整后重新新增！')
     // 防止重复创建 end
 
     let deptEntity = new DeptEntity()
     deptEntity = clone(deptEntity, dto)
     if (dto.userId) {
       let leader = null
-      const resUser = await this.userService.findInfoById({ id: dto.userId, requireRoles: false, requireDept: false })
+      const resUser = await this.userService.findInfoById({
+        id: dto.userId,
+        requireRoles: false,
+        requireDept: false
+      })
       leader = resUser?.data?.id ? resUser.data : null //注意返回结果类型得为数据库实体
       deptEntity.leader = leader
     }
@@ -67,7 +76,12 @@ export class DeptService {
       skip: pageSize * (pageNumber - 1),
       take: pageSize
     })
-    return ResultData.ok({ list: departments[0], total: departments[1] })
+    return ResultData.ok({
+      data: departments[0],
+      total: departments[1],
+      pageSize,
+      current: pageNumber
+    })
   }
 
   /** 更新部门 */
@@ -77,7 +91,11 @@ export class DeptService {
     deptEntity = clone(deptEntity, dto, ['createTime'])
     if (dto.userId) {
       let leader = null
-      const resUser = await this.userService.findInfoById({ id: dto.userId, requireRoles: false, requireDept: false })
+      const resUser = await this.userService.findInfoById({
+        id: dto.userId,
+        requireRoles: false,
+        requireDept: false
+      })
       leader = resUser?.data?.id ? resUser.data : null //注意返回结果类型得为数据库实体
       deptEntity.leader = leader
     }
