@@ -21,7 +21,7 @@ export class CreateRoleDto {
 
   @ApiProperty({ description: '当前角色所拥有的菜单组', required: false })
   @IsArray({ message: 'menuIds 类型错误，正确类型 string[]' })
-  @IsString({ each: true, message: '菜单组内类型错误' })
-  @IsNotEmpty({ each: true, message: '菜单id 不能为空' })
+  // @IsString({ each: true, message: '菜单组内类型错误' })
+  // @IsNotEmpty({ each: true, message: '菜单id 不能为空' })
   menuIds: string[]
 }

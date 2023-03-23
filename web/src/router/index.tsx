@@ -3,7 +3,7 @@ import { Navigate, useRoutes } from 'react-router-dom'
 import { RouteObject } from '@/router/interface'
 import lazyLoad from '@/components/LazyLoad'
 import BasicLayout from '@/layouts/BasicLayout'
-import Login from '@/views/Login'
+import Login from '@/views/login'
 
 export const asyncRoute: RouteObject[] = [
   {
@@ -15,11 +15,11 @@ export const asyncRoute: RouteObject[] = [
     children: [
       {
         path: '/home',
-        element: lazyLoad(React.lazy(() => import('@/views/Home'))),
+        element: lazyLoad(React.lazy(() => import('@/views/home'))),
         meta: {
           requiresAuth: true,
           title: '首页',
-          key: 'Home',
+          key: 'home',
           icon: 'HomeOutlined'
         }
       }
@@ -33,7 +33,7 @@ export const asyncRoute: RouteObject[] = [
     children: [
       {
         path: '/dataScreen/index',
-        element: lazyLoad(React.lazy(() => import('@/views/DataScreen'))),
+        element: lazyLoad(React.lazy(() => import('@/views/dataScreen'))),
         meta: {
           requiresAuth: true,
           title: '数据大屏',
@@ -52,11 +52,11 @@ export const asyncRoute: RouteObject[] = [
     children: [
       {
         path: '/assembly/Guide',
-        element: lazyLoad(React.lazy(() => import('@/views/AssemblyGuide'))),
+        element: lazyLoad(React.lazy(() => import('@/views/assemblyGuide'))),
         meta: {
           requiresAuth: true,
           title: '引导页',
-          key: 'AssemblyGuide'
+          key: 'assemblyGuide'
         }
       }
     ]
@@ -72,58 +72,62 @@ export const asyncRoute: RouteObject[] = [
     children: [
       {
         path: '/echarts/waterChart',
-        element: lazyLoad(React.lazy(() => import('@/views/Echarts/WaterChart'))),
+        element: lazyLoad(React.lazy(() => import('@/views/echarts/waterChart'))),
         meta: {
           requiresAuth: true,
           title: '水型图',
-          key: 'EchartsWaterChart'
+          key: 'echartsWaterChart'
         }
       },
       {
         path: '/echarts/columnChart',
-        element: lazyLoad(React.lazy(() => import('@/views/Echarts/ColumnChart'))),
+        element: lazyLoad(React.lazy(() => import('@/views/echarts/columnChart'))),
         meta: {
           requiresAuth: true,
           title: '柱状图',
-          key: 'EchartsWaterChartColumnChart'
+          key: 'echartsColumnChart'
         }
       }
     ]
   },
   {
-    path: '/systemManagement',
+    path: '/sysManage',
     element: <BasicLayout />,
     meta: {
       requiresAuth: true,
+      icon: 'PieChartOutlined',
       title: '系统管理',
-      key: 'systemManagement'
+      key: 'sysManage'
     },
     children: [
       {
-        path: '/systemManagement/userManagement',
-        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/UserManagement'))),
+        path: '/sysManage/userManage',
+        element: lazyLoad(React.lazy(() => import('@/views/sysManage/userManage'))),
         meta: {
           requiresAuth: true,
+          icon: 'AppstoreOutlined',
           title: '用户管理',
-          key: 'SystemManagementUserManagement'
+          key: 'sysManageUserManage'
         }
       },
       {
-        path: '/systemManagement/roleManagement',
-        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/RoleManagement'))),
+        path: '/sysManage/roleManage',
+        element: lazyLoad(React.lazy(() => import('@/views/sysManage/roleManage'))),
         meta: {
           requiresAuth: true,
+          icon: 'AppstoreOutlined',
           title: '角色管理',
-          key: 'SystemManagementRoleManagement'
+          key: 'sysManageRoleManage'
         }
       },
       {
-        path: '/systemManagement/menuManagement',
-        element: lazyLoad(React.lazy(() => import('@/views/SystemManagement/MenuManagement'))),
+        path: '/sysManage/menuManage',
+        element: lazyLoad(React.lazy(() => import('@/views/sysManage/menuManage'))),
         meta: {
           requiresAuth: true,
+          icon: 'AppstoreOutlined',
           title: '菜单管理',
-          key: 'SystemManagementMenuManagement'
+          key: 'sysManageMenuManage'
         }
       }
     ]

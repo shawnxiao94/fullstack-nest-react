@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button, Form, Input, message, Checkbox } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { Login } from '@/apis/interface'
-import { loginApi, getCaptchaApi, getPublicKeyApi } from '@/apis/modules/login'
+import useLoginApi from '@/apis/modules/login'
 import { HOME_URL, LOGIN_URL } from '@/config/config'
 import { connect } from 'react-redux'
 import { setToken, setTabsList, setUserInfo } from '@/store/app'
@@ -16,6 +16,8 @@ type CaptchaType = {
   id: string
   img: string
 }
+
+const { loginApi, getCaptchaApi, getPublicKeyApi } = useLoginApi()
 
 const REMEMBER_ME_USER_INFO = 'remember_me_user_info'
 const PUBLIC_KEY_SECRET_INFO = 'public_key_secret_info'
@@ -42,8 +44,8 @@ const LoginForm = (props: any) => {
     try {
       setLoadingCaptcha(true)
       const res: any = await getCaptchaApi({ width: 100, height: 50 })
-      if (res?.data?.id) {
-        setCaptchaInfo(res.data)
+      if (res?.id) {
+        setCaptchaInfo(res)
       }
     } catch {
       new Error('错误')
@@ -54,8 +56,8 @@ const LoginForm = (props: any) => {
   const getPublicKeyFn = async () => {
     try {
       const res: any = await getPublicKeyApi()
-      if (res?.data) {
-        localStorage.setItem(PUBLIC_KEY_SECRET_INFO, res.data)
+      if (res) {
+        localStorage.setItem(PUBLIC_KEY_SECRET_INFO, res)
       }
     } catch {
       new Error('获取公钥错误')
@@ -83,7 +85,7 @@ const LoginForm = (props: any) => {
         hashClient,
         ivClient
       }
-      const { data } = await loginApi({ ...form })
+      const data: any = await loginApi({ ...form })
       if (data?.token && data?.encryptUserInfo) {
         const flag = await verifySignatureJSencrypt(data?.encryptUserInfo, data?.signature, pubKey)
         if (!flag) {

@@ -138,15 +138,14 @@ export class LoginService {
       return await ResultData.fail(AppHttpCode.USER_PASSWORD_INVALID, '密码不正确。')
     }
     const roleIds = user.roles.map((role) => role.id)
-    const res = await this.roleService.findInfosByIds({
-      ids: roleIds,
-      requireMenus: true,
-      treeType: true
+    const res = await this.roleService.findPermsByIds({
+      ids: roleIds
     })
-    let menus = []
-    if (res.data.length) {
-      menus = res.data.reduce((pre, cur) => pre.concat(cur.menus), [])
-    }
+    let perms = []
+    console.log('res-roleIds', roleIds, res)
+    // if (res.data.length) {
+    //   perms = res.data.reduce((pre, cur) => pre.concat(cur.menus), [])
+    // }
     const token = this.createToken({
       id: String(user.id),
       pv: 1
@@ -164,7 +163,7 @@ export class LoginService {
     await this.redisService.set(`admin:passwordVersion:${user.id}`, '1')
     // Token设置过期时间 24小时
     await this.redisService.set(`admin:token:${user.id}`, token, 60 * 60 * 24)
-    await this.redisService.set(`admin:menus:${user.id}`, JSON.stringify(menus))
+    // await this.redisService.set(`admin:menus:${user.id}`, JSON.stringify(menus))
     // await this.logService.saveLoginLog(user.id, ip, ua)
     return await ResultData.ok({
       token,

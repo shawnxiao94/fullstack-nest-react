@@ -25,7 +25,7 @@ export class CreateMenuDto {
     required: true
   })
   @IsNumber({}, { message: 'type 类型错误' })
-  @IsIn($enum(MenuType).getValues(), { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
+  @IsIn($enum(MenuType).getValues(), { message: 'type 的值只能是 0/1/2，且分别表示目录/菜单/按钮' })
   @IsNotEmpty()
   readonly type: MenuType
 
@@ -92,8 +92,8 @@ export class CreateMenuDto {
   readonly keepalive: boolean = true
 
   @ApiProperty({ description: '外链打开方式', required: false, default: 1 })
-  @IsIn([1, 2])
-  @ValidateIf((o) => o.type !== 3)
+  // @IsIn([1, 2])
+  // @ValidateIf((o) => o.type !== 3)
   readonly openMode: number
 
   @ApiProperty({
@@ -102,10 +102,11 @@ export class CreateMenuDto {
   })
   isLink: string
 
-  @IsBoolean()
+  // @IsBoolean()
   @ApiProperty({
     description: '是否内嵌窗口，开启条件，1、isIframe:true 2、isLink：链接地址不为空',
-    required: false
+    required: false,
+    default: false
   })
   isIframe: boolean
 }

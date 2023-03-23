@@ -1,4 +1,4 @@
-import { HttpException, Injectable, HttpStatus } from '@nestjs/common'
+import { HttpException, Inject, Injectable, HttpStatus } from '@nestjs/common'
 import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
 import { Repository, DataSource, Like, In } from 'typeorm'
 import { instanceToPlain } from 'class-transformer'
@@ -18,13 +18,17 @@ import { ResultData } from '@/common/utils/result'
 import { AppHttpCode } from '@/common/enums/code.enum'
 import { clone, flatArrToTree } from '@/common/utils'
 
+import { ROOT_ROLE_ID } from '@/modules/admin/admin.constants'
+import { concat, includes, isEmpty, uniq } from 'lodash'
+
 @Injectable()
 export class RoleService {
   constructor(
     @InjectRepository(RoleEntity)
     private readonly roleRepository: Repository<RoleEntity>,
     private readonly dataSource: DataSource,
-    private readonly menuService: MenuService
+    private readonly menuService: MenuService,
+    @Inject(ROOT_ROLE_ID) private rootRoleId: string
   ) {}
 
   // 新增角色
@@ -88,44 +92,47 @@ export class RoleService {
   }
 
   //获取前端路由Tree
-  private async getRouteTree(data: RoleEntity[]): Promise<RoleEntity[]> {
+  private async getRouteTree(data: RoleEntity[]): Promise<any> {
     if (!data?.length) {
       return []
     }
-    const result = []
+    const menus = []
     data.forEach((item: RoleEntity) => {
-      const obj = { ...item, menus: [] }
       if (item?.menus?.length) {
         item.menus.forEach((menu: MenuEntity) => {
           const router = {
-            id: menu.id,
-            parentId: menu.parentId,
-            name: menu.name,
-            path: menu.path,
-            componentPath: menu.componentPath,
-            redirect: menu.redirect,
-            meta: {
-              title: menu.title,
-              icon: menu.icon,
-              hidden: menu.hidden,
-              keepalive: menu.keepalive,
-              type: menu.type,
-              isLink: menu.isLink,
-              isIframe: menu.isIframe,
-              level: menu.level,
-              sort: menu.sort,
-              openMode: menu.openMode
-            },
+            ...menu,
             children: []
           }
-          obj.menus.push(router)
+          menus.push(router)
         })
-        const tmp = flatArrToTree(obj.menus)
-        obj.menus = [...tmp]
       }
-      result.push(obj)
     })
-    return result
+    menus.sort((a, b) => a.sort - b.sort)
+    const treeArr = flatArrToTree(menus)
+
+    return { data, treeArr }
+  }
+
+  // 根据ids角色数组获取关联权限按钮
+  async findPermsByIds({ ids }: Pick<InfoArrRoleDto, 'ids'>): Promise<ResultData> {
+    if (!ids.length) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
+    let perms: any[] = []
+    if (includes(ids, this.rootRoleId)) {
+      // root find all
+      const res = await this.menuService.findAllList()
+      perms = res.data
+    } else {
+      perms = await this.roleRepository
+        .createQueryBuilder('sys_role')
+        .leftJoinAndSelect('sys_role.menus', 'menus') // 角色实体表关联的菜单字段
+        .where('sys_role.id IN (:...ids)', { ids })
+        .andWhere('menus.type = 2')
+        .andWhere('menus.perms IS NOT NULL')
+        .orderBy('sys_role.updateTime', 'DESC')
+        .getMany()
+    }
+    return ResultData.ok(perms)
   }
 
   /** 模糊分页查询角色列表 */
@@ -182,8 +189,13 @@ export class RoleService {
   }
 
   async remove(id: string): Promise<ResultData> {
-    const existing = await this.roleRepository.findOne({ where: { id } })
+    const existing = await this.roleRepository.findOne({ where: { id }, relations: ['menus'] })
     if (!existing) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
+    if (existing.menus?.length)
+      return ResultData.fail(
+        AppHttpCode.PARAM_INVALID,
+        '当前角色有关联菜单咱不能删除，请先解绑菜单'
+      )
     await this.roleRepository.remove(existing)
     return ResultData.ok()
   }

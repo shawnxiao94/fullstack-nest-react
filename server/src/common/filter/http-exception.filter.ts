@@ -1,13 +1,27 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common'
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common'
+
+import { Logger } from '../libs/log4js/log4j.util'
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp() // 获取请求上下文
     const response = ctx.getResponse() // 获取请求上下文中的 response对象
-    const status = exception.getStatus() // 获取异常状态码
+    const request = ctx.getRequest()
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR // 获取异常状态码
     const exceptionResponse: any = exception.getResponse()
     let validMessage = ''
+
+    const logFormat = `-----------------------------------------------------------------------
+      Request original url: ${request.originalUrl}
+      Method: ${request.method}
+      IP: ${request.ip}
+      Status code: ${status}
+      Response: ${exception}
+      -----------------------------------------------------------------------
+      `
+    Logger.error(logFormat)
 
     // for (const key in exception) {
     //   console.log(key, exception[key])

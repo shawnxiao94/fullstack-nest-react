@@ -117,8 +117,9 @@ export class AddUserDto {
     required: false,
     description: '用户邮箱'
   })
-  @IsEmail()
-  @ValidateIf((o) => !isEmpty(o.email))
+  // @IsEmail()
+  // @ValidateIf((o) => !isEmpty(o.email))
+  @IsString()
   email: string
 
   @ApiProperty({ description: '账户名', required: true })

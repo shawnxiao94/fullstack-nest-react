@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
-import { Repository, Equal, Brackets, Like, In } from 'typeorm'
+import { Repository, Equal, Brackets, Like, In, IsNull, Not } from 'typeorm'
 
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto, IdNameDto } from './dto/update-menu.dto'
@@ -33,24 +33,26 @@ export class MenuService {
       if (!parentMenu)
         return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
-    if (~~dto.type !== 3 && !dto.path.length) {
+    if (~~dto.type !== 2 && !dto.path.length) {
       return ResultData.fail(AppHttpCode.SERVICE_ERROR, '非按钮的菜单的path不能为空')
     }
     if (await this.menuRepository.findOne({ where: { name: dto.name.trim() } })) {
       return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前name已存在！')
     }
 
-    if (dto.type !== 3) {
+    if (dto.type !== 2) {
       if (await this.menuRepository.findOne({ where: { path: dto.path.trim() } })) {
         return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前path已存在！')
       }
     }
     const newData = await this.menuRepository.create({
-      ...dto
+      ...dto,
+      isIframe: dto?.isIframe ? dto.isIframe : false,
+      isLink: dto?.isLink ? dto.isLink : ''
     })
     const res = await this.menuRepository.save(newData)
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单创建失败，请稍后重试')
-    return ResultData.ok()
+    return ResultData.ok(res.id)
   }
 
   // 更新菜单
@@ -85,6 +87,12 @@ export class MenuService {
   async deleteMenu(id: string): Promise<ResultData> {
     const existing = await this.menuRepository.findOne({ where: { id } })
     if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
+    const res = await this.menuRepository.findOne({ where: { parentId: id } })
+    if (res)
+      return ResultData.fail(
+        AppHttpCode.PARAM_INVALID,
+        '当前菜单有关联子集暂不能删除，请先解除父子关联'
+      )
     await this.menuRepository.remove(existing)
     return ResultData.ok()
   }
@@ -108,6 +116,17 @@ export class MenuService {
     const { keywords } = dto
     const data = await this.menuRepository.find({
       where: [{ name: Like('%' + keywords + '%') }, { title: Like('%' + keywords + '%') }],
+      order: {
+        id: 'DESC'
+      }
+    })
+    return ResultData.ok(data)
+  }
+
+  // 查询所有菜单列表（除按钮外）
+  async findAllList(): Promise<ResultData> {
+    const data = await this.menuRepository.find({
+      where: { perms: Not(IsNull()), type: 2 },
       order: {
         id: 'DESC'
       }
@@ -140,7 +159,7 @@ export class MenuService {
     return ResultData.ok({ data: data[0], total: data[1], pageSize, current: pageNumber })
   }
 
-  // 获取菜单Tree
+  // 根据父id获取菜单Tree
   async getMenuTree(dto: parentMenuIdDto): Promise<ResultData> {
     const result = await this.loopMenuTree(dto.parentId)
     if (!result) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已被删除')

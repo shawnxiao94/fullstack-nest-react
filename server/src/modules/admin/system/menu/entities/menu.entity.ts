@@ -7,24 +7,28 @@ import { MenuType } from '@/common/enums/common.enum'
 
 @Entity({ name: 'sys_menu' })
 export class MenuEntity extends BaseEntityModelWithUUIDPrimary {
-  @Column({ name: 'parent_id', nullable: true, type: 'varchar', length: 100, default: 'root' })
+  @Column({ name: 'parent_id', type: 'varchar', length: 100, default: 'root' })
   @ApiProperty({ description: '父级菜单id' })
   parentId: string
 
-  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮' })
-  @Column({ type: 'int', default: 1, comment: '菜单类型， 1-菜单/目录 2-tabs 3-按钮' })
+  @ApiProperty({ description: '菜单类型 0: 目录 | 1: 菜单 | 2: 权限按钮' })
+  @Column({ type: 'int', default: 1, comment: '菜单类型 0: 目录 | 1: 菜单 | 2: 权限按钮' })
   public type: MenuType
 
   @ApiProperty({ description: '路由名称,路由/菜单标识，前端路由name,按钮唯一标识' })
-  @Column({ type: 'varchar', length: 30, comment: '路由名称', unique: true })
+  @Column({ type: 'varchar', length: 30, comment: '路由名称', nullable: true, unique: true })
   name: string
 
-  @Column({ comment: '路由地址', nullable: true })
+  @Column({ comment: '路由地址,唯一标识', unique: true })
   @ApiProperty({ description: '路由地址' })
   path: string
 
   @Column({ name: 'component_path', comment: '组件地址', nullable: true })
   componentPath: string
+
+  @Column({ comment: '权限标识', nullable: true })
+  @ApiProperty()
+  perms: string
 
   @Column({ comment: '菜单名称' })
   title: string

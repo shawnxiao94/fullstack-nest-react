@@ -36,13 +36,13 @@ export class RoleController {
     return await this.roleService.findList(query)
   }
 
-  @Get('info')
+  @Post('infoMenuById')
   @ApiOperation({ summary: '根据id获取角色信息及关联的菜单' })
-  async findInfoById(@Query() query: InfoRoleDto): Promise<ResultData> {
-    return await this.roleService.findInfoById(query)
+  async findInfoById(@Body() dto: InfoRoleDto): Promise<ResultData> {
+    return await this.roleService.findInfoById(dto)
   }
 
-  @Post('infosByIds')
+  @Post('menuPermsInfoByIds')
   @ApiOperation({ summary: '根据ids数组获取角色信息及关联的菜单' })
   async findInfosByIds(@Body() dto: InfoArrRoleDto): Promise<ResultData> {
     return await this.roleService.findInfosByIds(dto)

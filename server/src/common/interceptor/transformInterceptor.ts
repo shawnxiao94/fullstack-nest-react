@@ -10,6 +10,8 @@ import { map } from 'rxjs/operators'
 
 import { Response, Request } from 'express'
 
+import { Logger } from '../libs/log4js/log4j.util'
+
 /** 每次请求的记数器 */
 let requestSeq = 0
 const check_list = ['/api/', '/nodeApi/']
@@ -22,7 +24,10 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
    * @param next 后续调用函数
    * @returns
    */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler
+  ): Observable<any> | Promise<Observable<any>> {
     /** 请求开始时间 */
     const start = Date.now()
     /** 当前环境 */
@@ -42,11 +47,21 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
         if (res.statusCode === HttpStatus.CREATED && req.method === 'POST') {
           res.statusCode = HttpStatus.OK
         }
-        return {
-          code: 200,
-          status: 'OK',
-          data
-        }
+        const logFormat = `-----------------------------------------------------------------------
+        Request original url: ${req.originalUrl}
+        Method: ${req.method}
+        IP: ${req.ip}
+        User: ${JSON.stringify(req.user)}
+        Response data: ${JSON.stringify(data.data)}
+        -----------------------------------------------------------------------`
+        Logger.info(logFormat)
+        Logger.access(logFormat)
+        return data
+        // return {
+        //   code: 200,
+        //   status: 'OK',
+        //   data
+        // }
       })
     )
   }

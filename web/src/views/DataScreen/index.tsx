@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactParticleLine from 'react-particle-line'
-import DataHeader from './components/DataHeader'
-import Equipment from './components/Equipment'
+import DataHeader from './components/dataHeader'
+import Equipment from './components/equipment'
 import './index.less'
 
 function index() {

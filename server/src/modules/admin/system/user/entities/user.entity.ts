@@ -16,7 +16,7 @@ import { Exclude } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 
 import { $enum } from 'ts-enum-util'
-import { StatusValue, UserType } from '@/common/enums/common.enum'
+import { StatusValue, UserType, Sex } from '@/common/enums/common.enum'
 
 import { DeptEntity } from '../../dept/entities/dept.entity'
 import { RoleEntity } from '../../role/entities/role.entity'
@@ -62,18 +62,18 @@ export class UserEntity extends BaseEntityModelWithUUIDPrimary {
   remark: string
 
   @ApiProperty({ type: Number, description: '性别：0-女 1-男', enum: $enum(UserType).getValues() })
-  @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '性别：0-女 1-男' })
+  @Column({ type: 'tinyint', default: Sex.man, comment: '性别：0-女 1-男' })
   public sex: UserType
 
   @ApiProperty({
     type: Number,
-    description: '帐号类型：0-后台管理员， 1-普通用户',
+    description: '帐号类型：0-超管，1-后台管理员, 2-普通用户',
     enum: $enum(UserType).getValues()
   })
   @Column({
     type: 'tinyint',
     default: UserType.ORDINARY_USER,
-    comment: '帐号类型：0-后台管理员， 1-普通用户'
+    comment: '帐号类型：0-超管，1-后台管理员, 2-普通用户'
   })
   public type: UserType
 

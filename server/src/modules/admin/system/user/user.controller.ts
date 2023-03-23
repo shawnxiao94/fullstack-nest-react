@@ -10,7 +10,8 @@ import {
   Param,
   Delete,
   UseInterceptors,
-  ClassSerializerInterceptor
+  ClassSerializerInterceptor,
+  Request
 } from '@nestjs/common'
 import { UserService } from './user.service'
 import {
@@ -100,13 +101,14 @@ export class UserController {
     return await this.userService.updatePassword(dto)
   }
 
-  @Post('infoById')
+  @Post('infoByToken')
   @ApiBearerAuth() // swagger文档设置token
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({
-    summary: '根据ID查询用户信息及关联角色'
+    summary: '根据token查询用户信息及关联角色'
   })
-  async findInfoById(@Body() dto: InfoSearchDto): Promise<ResultData> {
+  async findInfoById(@Body() dto: InfoSearchDto, @Req() request: Request): Promise<ResultData> {
+    const token = request.headers['authorization']
     return await this.userService.findInfoById(dto)
   }
 

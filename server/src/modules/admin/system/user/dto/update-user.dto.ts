@@ -45,7 +45,6 @@ export class UpdateUserDto {
     required: false,
     type: String
   })
-  @IsString({ message: '类型错误' })
   deptId: string
 
   @ApiProperty({
@@ -55,6 +54,13 @@ export class UpdateUserDto {
   })
   @IsIn([0, 1])
   status: number
+
+  @ApiProperty({
+    description: '真实姓名',
+    required: false
+  })
+  @IsString()
+  name: string
 
   @ApiProperty({
     description: '昵称',

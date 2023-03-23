@@ -4,6 +4,7 @@ export interface MetaProps {
   title: string
   key?: string
   icon?: string
+  isLink?: string
 }
 
 export interface RouteObject {
@@ -11,7 +12,7 @@ export interface RouteObject {
   children?: RouteObject[]
   element?: React.ReactNode
   index?: boolean
-  path?: string
+  path: string
   meta?: MetaProps
   isLink?: string
 }

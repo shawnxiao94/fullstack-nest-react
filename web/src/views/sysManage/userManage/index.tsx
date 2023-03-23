@@ -1,18 +1,18 @@
-import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
 import {
   ProTable,
   TableDropdown,
-  ModalForm,
   DrawerForm,
   ProFormText,
   ProForm,
   ProFormDateRangePicker,
-  ProFormSelect
+  ProFormSelect,
+  ProFormSwitch
 } from '@ant-design/pro-components'
-import { Form, Button, Dropdown, Space, Tag, message } from 'antd'
+import { Button, Space, Tag, message, Switch } from 'antd'
 import { useRef, useState, useEffect } from 'react'
-import { findUserListApi } from '@/apis/modules/SystemManagement/UserManagement'
+import { useUserManageApi, useRoleManageApi } from '@/apis/modules/sysManage'
 
 type GithubIssueItem = {
   createTime: string
@@ -33,13 +33,14 @@ type GithubIssueItem = {
   dept: string
 }
 
+const userApi = useUserManageApi()
+const roleApi = useRoleManageApi()
+
 const index = () => {
-  const [form] = Form.useForm<{ name: string; company: string }>()
-  const restFormRef = useRef<ProFormInstance>()
   const drawerFormRef = useRef<ProFormInstance>()
-  const [modalVisit, setModalVisit] = useState(false)
   const [drawerVisit, setDrawerVisit] = useState(false)
   const [modalFormMode, setModalFormMode] = useState({ title: '新增', mode: 'add' })
+  const [rolesOption, setRolesOption] = useState([])
   const [drawerFormValues, setDrawerFormValues] = useState<GithubIssueItem>(null as any)
   const actionRef = useRef<ActionType>()
 
@@ -56,26 +57,45 @@ const index = () => {
   const editModeFormFn = row => {
     setModalFormMode({ title: '编辑', mode: 'edit' })
     setDrawerVisit(true)
-    setDrawerFormValues(row)
+    setDrawerFormValues({ ...row, roles: row.roles.map(r => r.id) })
   }
 
   useEffect(() => {
     if (drawerVisit) {
-      // 显示时，编辑场景，表单初始化
-      drawerFormRef?.current?.setFieldsValue({
-        ...drawerFormValues
-      })
+      if (modalFormMode.mode !== 'add') {
+        // 显示时，编辑场景，表单初始化
+        drawerFormRef?.current?.setFieldsValue({
+          ...drawerFormValues
+        })
+      } else {
+        drawerFormRef?.current?.resetFields()
+      }
     } else {
       drawerFormRef?.current?.resetFields()
     }
   }, [drawerVisit])
 
+  // 所属角色列表
+  const findRoleListApiFn = async () => {
+    const data: any = await roleApi.findRoleListApi({
+      keywords: ''
+    })
+    if (data?.length) {
+      const arr = data.map(item => {
+        item.value = item.id
+        item.label = item.name
+        return item
+      })
+      setRolesOption(arr)
+    } else {
+      setRolesOption([])
+    }
+  }
+  useEffect(() => {
+    findRoleListApiFn()
+  }, [])
+
   const columns: ProColumns<GithubIssueItem>[] = [
-    {
-      dataIndex: 'index',
-      valueType: 'indexBorder',
-      width: 48
-    },
     {
       title: '账号',
       dataIndex: 'account',
@@ -94,6 +114,12 @@ const index = () => {
           }
         ]
       }
+    },
+    {
+      title: '姓名',
+      key: 'name',
+      dataIndex: 'name',
+      ellipsis: true
     },
     {
       title: '昵称',
@@ -115,7 +141,7 @@ const index = () => {
       ellipsis: true
     },
     {
-      title: '角色',
+      title: '关联角色',
       key: 'roles',
       dataIndex: 'roles',
       ellipsis: true,
@@ -127,7 +153,7 @@ const index = () => {
         return defaultRender(_)
       },
       render: (_, record) => (
-        <Space>{record.roles.length ? record.roles.map(({ name, code }) => <Tag key={code}>{name}</Tag>) : null}</Space>
+        <Space>{record.roles.length ? <Tag color="cyan"> {`['${record.roles.map(r => r.name).join(',')}']`}</Tag> : null}</Space>
       )
     },
     {
@@ -142,20 +168,11 @@ const index = () => {
       formItemProps: {
         initialValue: 1 // 初始值
       },
-      valueType: 'select',
       editable: () => {
         return false
       },
-      valueEnum: {
-        0: {
-          text: '禁用',
-          status: '0'
-        },
-        1: {
-          text: '启用',
-          status: '1',
-          disabled: false
-        }
+      render: (_, record) => {
+        return <Switch checkedChildren="开启" unCheckedChildren="关闭" checked={!!record?.status} />
       }
     },
     {
@@ -198,24 +215,14 @@ const index = () => {
       ]
     }
   ]
-
-  const waitTime = (time: number = 100) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(true)
-      }, time)
-    })
-  }
-
   const handleRemove = async selectedRows => {
     const hide = message.loading('删除中')
     if (!selectedRows) return true
     try {
-      await setTimeout(() => {
-        console.log('remove')
-      }, 500)
       hide()
-      message.success('删除成功')
+      await userApi.delUserApi({ id: selectedRows.id })
+      // 刷新
+      actionRef?.current?.reload()
       return true
     } catch (error) {
       hide()
@@ -226,17 +233,43 @@ const index = () => {
   const handleUpdate = async fields => {
     const hide = message.loading('修改中')
     try {
-      await setTimeout(() => {
-        console.log('update', fields)
-      }, 500)
       hide()
-      message.success('修改成功')
+      updateUserInfoFn({ ...fields, roles: fields.roles.map(r => r.id) })
       return true
     } catch (error) {
       hide()
       message.error('修改失败，请重试')
       return false
     }
+  }
+
+  // 修改
+  const updateUserInfoFn = async params => {
+    if (modalFormMode.mode === 'add') {
+      // 新增
+      await userApi.addUserApi({
+        ...params,
+        roleIds: params.roles,
+        status: params?.status ? 1 : 0,
+        mobile: params?.mobile ? params?.mobile : '',
+        email: params?.email ? params?.email : '',
+        deptId: params?.deptId ? params?.deptId : '',
+        avatar: params?.avatar ? params?.avatar : '',
+        sex: params?.sex ? 1 : 0
+      })
+      // 刷新
+      actionRef?.current?.reload()
+      return true
+    }
+    // 编辑
+    const res = await userApi.updateUserInfoApi({ ...drawerFormValues, ...params, roleIds: params?.roles })
+    if (res) {
+      // 刷新
+      actionRef?.current?.reload()
+      message.success('提交成功')
+      return true
+    }
+    return false
   }
 
   return (
@@ -248,7 +281,7 @@ const index = () => {
         cardBordered
         request={async (params = {}, sort, filter) => {
           console.log(sort, '----', filter, '----', params)
-          const data: any = await findUserListApi({
+          const res: any = await userApi.findUserListApi({
             ...params,
             pageSize: params.pageSize as number,
             pageNumber: params.current as number,
@@ -257,13 +290,6 @@ const index = () => {
             roleIds: [],
             deptId: ''
           })
-          const res: any = data?.data
-          if (res?.data?.length) {
-            res.data.map(item => {
-              item.status = item.status === 1 ? '启用' : '禁用'
-              return item
-            })
-          }
           return res
         }}
         editable={{
@@ -276,7 +302,7 @@ const index = () => {
           }
         }}
         columnsState={{
-          persistenceKey: 'pro-table-singe-demos',
+          persistenceKey: 'pro-table-singe-user-manage',
           persistenceType: 'localStorage',
           onChange(value) {
             console.log('value: ', value)
@@ -310,111 +336,11 @@ const index = () => {
         dateFormatter="string"
         headerTitle="用户列表"
         toolBarRender={() => [
-          <Button
-            key="button"
-            icon={<PlusOutlined />}
-            type="primary"
-            onClick={() => {
-              setModalVisit(true)
-            }}>
-            新建test
-          </Button>,
           <Button key="button" icon={<PlusOutlined />} type="primary" onClick={addFn}>
             新建
-          </Button>,
-          <Dropdown
-            key="menu"
-            menu={{
-              items: [
-                {
-                  label: '1st item',
-                  key: '1'
-                },
-                {
-                  label: '2nd item',
-                  key: '2'
-                },
-                {
-                  label: '3rd item',
-                  key: '3'
-                }
-              ]
-            }}>
-            <Button>
-              <EllipsisOutlined />
-            </Button>
-          </Dropdown>
+          </Button>
         ]}
       />
-      <ModalForm<{
-        name: string
-        company: string
-      }>
-        title="新增"
-        open={modalVisit}
-        onOpenChange={setModalVisit}
-        form={form}
-        formRef={restFormRef}
-        autoFocusFirstInput
-        submitter={{
-          searchConfig: {
-            resetText: '重置'
-          },
-          resetButtonProps: {
-            onClick: () => {
-              restFormRef.current?.resetFields()
-              //   setModalVisible(false);
-            }
-          }
-        }}
-        modalProps={{
-          destroyOnClose: true,
-          onCancel: () => console.log('run')
-        }}
-        submitTimeout={2000}
-        onFinish={async values => {
-          await waitTime(2000)
-          console.log(values.name)
-          message.success('提交成功')
-          return true
-        }}>
-        <ProForm.Group>
-          <ProFormText width="md" name="name" label="签约客户名称" tooltip="最长为 24 位" placeholder="请输入名称" />
-
-          <ProFormText width="md" name="company" label="我方公司名称" placeholder="请输入名称" />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText width="md" name="contract" label="合同名称" placeholder="请输入名称" />
-          <ProFormDateRangePicker name="contractTime" label="合同生效时间" />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSelect
-            request={async () => [
-              {
-                value: 'chapter',
-                label: '盖章后生效'
-              }
-            ]}
-            width="xs"
-            name="useMode"
-            label="合同约定生效方式"
-          />
-          <ProFormSelect
-            width="xs"
-            options={[
-              {
-                value: 'time',
-                label: '履行完终止'
-              }
-            ]}
-            name="unusedMode"
-            label="合同约定失效效方式"
-          />
-        </ProForm.Group>
-        <ProFormText width="sm" name="id" label="主合同编号" />
-        <ProFormText name="project" disabled label="项目名称" initialValue="xxxx项目" />
-        <ProFormText width="xs" name="mangerName" disabled label="商务经理" initialValue="启途" />
-      </ModalForm>
       <DrawerForm
         onOpenChange={setDrawerVisit}
         title={modalFormMode.title}
@@ -428,7 +354,8 @@ const index = () => {
                 <Button
                   key="extra-reset"
                   onClick={() => {
-                    props.reset()
+                    // props.reset()
+                    drawerFormRef.current?.resetFields()
                   }}>
                   重置
                 </Button>
@@ -436,9 +363,8 @@ const index = () => {
             ]
           }
         }}
-        onFinish={async () => {
-          message.success('提交成功')
-          return true
+        onFinish={async values => {
+          return updateUserInfoFn(values)
         }}>
         <ProForm.Group>
           <ProFormText
@@ -453,55 +379,91 @@ const index = () => {
             width="md"
             name="account"
             label="账号"
+            initialValue={drawerFormValues?.account}
             tooltip="账号不可重复具唯一性"
-            disabled={modalFormMode.mode === 'cat'}
+            disabled={modalFormMode.mode !== 'add'}
             placeholder="请输入账号"
           />
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormText width="md" name="nickName" label="昵称" disabled={modalFormMode.mode === 'cat'} placeholder="请输入昵称" />
-          <ProFormText name="email" disabled={modalFormMode.mode === 'cat'} label="邮箱" placeholder="请输入邮箱" />
+          <ProFormText
+            width="md"
+            name="nickName"
+            initialValue={drawerFormValues?.nickName}
+            label="昵称"
+            disabled={modalFormMode.mode === 'cat'}
+            placeholder="请输入昵称"
+          />
+          <ProFormText
+            width="md"
+            name="email"
+            initialValue={drawerFormValues?.email}
+            disabled={modalFormMode.mode === 'cat'}
+            label="邮箱"
+            placeholder="请输入邮箱"
+          />
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormText width="md" name="mobile" label="手机" disabled={modalFormMode.mode === 'cat'} placeholder="请输入手机" />
-          <ProFormSelect
-            options={[
-              {
-                value: 1,
-                label: '生效'
-              },
-              {
-                value: 0,
-                label: '禁用'
-              }
-            ]}
-            width="xs"
+          <ProFormText
+            width="md"
+            name="mobile"
+            initialValue={drawerFormValues?.mobile}
+            label="手机"
+            disabled={modalFormMode.mode === 'cat'}
+            placeholder="请输入手机"
+          />
+          <ProFormSwitch
+            width="md"
             name="status"
-            disabled={modalFormMode.mode === 'cat'}
+            initialValue={drawerFormValues?.status}
+            fieldProps={{ checkedChildren: '开启', unCheckedChildren: '关闭' }}
             label="账号状态"
+            disabled={modalFormMode.mode === 'cat'}
           />
         </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
-            width="xs"
-            options={[
-              {
-                value: 'root',
-                label: '超级管理'
-              }
-            ]}
+            width="md"
+            options={rolesOption}
             name="roles"
+            initialValue={drawerFormValues?.roles}
+            fieldProps={{
+              mode: 'multiple'
+            }}
             disabled={modalFormMode.mode === 'cat'}
-            label="角色"
+            label="关联角色"
           />
-          <ProFormText width="sm" name="dept" disabled={modalFormMode.mode === 'cat'} label="部门" />
+          <ProFormText
+            width="md"
+            name="dept"
+            initialValue={drawerFormValues?.dept}
+            disabled={modalFormMode.mode === 'cat'}
+            label="部门"
+          />
+        </ProForm.Group>
+        <ProForm.Group>
+          <ProFormText
+            width="md"
+            name="avatar"
+            initialValue={drawerFormValues?.avatar}
+            disabled={modalFormMode.mode === 'cat'}
+            label="头像"
+          />
+          <ProFormSwitch
+            width="md"
+            name="sex"
+            initialValue={drawerFormValues?.sex}
+            fieldProps={{ checkedChildren: '男', unCheckedChildren: '女' }}
+            label="性别"
+            disabled={modalFormMode.mode === 'cat'}
+          />
         </ProForm.Group>
         <ProFormText
           name="remark"
           disabled={modalFormMode.mode === 'cat'}
           label="备注"
+          initialValue={drawerFormValues?.remark}
           placeholder="请输入备注"
-          initialValue="xxxx备注"
         />
         <ProFormText name="address" disabled={modalFormMode.mode === 'cat'} label="地址" initialValue="xxxx地址" />
         {modalFormMode.mode === 'cat' ? <ProFormDateRangePicker name="createTime" disabled label="创建时间" /> : null}

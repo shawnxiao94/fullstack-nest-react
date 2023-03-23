@@ -1,9 +1,9 @@
 import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
-import { ProTable, DrawerForm, ProFormText, ProForm, ProFormSelect, ProFormSwitch } from '@ant-design/pro-components'
+import { ProTable, DrawerForm, ProFormText, ProForm, ProFormDateRangePicker, ProFormTreeSelect } from '@ant-design/pro-components'
 import { Button, message } from 'antd'
 import { useRef, useState, useEffect } from 'react'
-import { findMenuListApi } from '@/apis/modules/SystemManagement/MenuManagement'
+import { useRoleManageApi, useMenuManageApi } from '@/apis/modules/sysManage'
 
 type FormItemKeys = {
   createTime: string
@@ -14,17 +14,21 @@ type FormItemKeys = {
   menus?: any[]
 }
 
+const roleApi = useRoleManageApi()
+const menuApi = useMenuManageApi()
+
 const index = () => {
   const drawerFormRef = useRef<ProFormInstance>()
   const [drawerVisit, setDrawerVisit] = useState(false)
   const [modalFormMode, setModalFormMode] = useState({ title: '新增', mode: 'add' })
   const [drawerFormValues, setDrawerFormValues] = useState<FormItemKeys>(null as any)
   const actionRef = useRef<ActionType>()
+  // const [menusOfRole, setMenusOfRole] = useState<any[]>([])
 
   const addFn = () => {
     setModalFormMode({ title: '新增', mode: 'add' })
-    setDrawerVisit(true)
     setDrawerFormValues(null as any)
+    setDrawerVisit(true)
   }
   const catDetailFn = row => {
     setModalFormMode({ title: '查看', mode: 'cat' })
@@ -33,16 +37,48 @@ const index = () => {
   }
   const editModeFormFn = row => {
     setModalFormMode({ title: '编辑', mode: 'edit' })
-    setDrawerVisit(true)
     setDrawerFormValues(row)
+    setDrawerVisit(true)
+  }
+
+  // 获取该角色对应得菜单
+  const fetchInfoMenusFn = async () => {
+    if (modalFormMode.mode === 'add') {
+      drawerFormRef?.current?.resetFields()
+      drawerFormRef?.current?.setFieldsValue({
+        ...drawerFormValues,
+        menus: drawerFormValues?.menus?.length
+          ? drawerFormValues.menus.map(m => {
+              m.value = m.id
+              m.label = m.title
+              return m
+            })
+          : []
+      })
+    } else {
+      const res: any = await roleApi.findInfoMenusByRoleIdApi({
+        id: drawerFormValues?.id,
+        requireMenus: true,
+        treeType: false
+      })
+      drawerFormRef?.current?.setFieldsValue({
+        ...drawerFormValues,
+        menus: res[0].menus?.length
+          ? res[0].menus.map(m => {
+              m.value = m.id
+              m.label = m.title
+              return m
+            })
+          : []
+      })
+    }
   }
 
   useEffect(() => {
     if (drawerVisit) {
+      // console.log('menusOfRole', menusOfRole)
       // 显示时，编辑场景，表单初始化
-      drawerFormRef?.current?.setFieldsValue({
-        ...drawerFormValues
-      })
+      fetchInfoMenusFn()
     } else {
       drawerFormRef?.current?.resetFields()
     }
@@ -50,7 +86,7 @@ const index = () => {
 
   const columns: ProColumns<FormItemKeys>[] = [
     {
-      title: '路由名',
+      title: '名称',
       dataIndex: 'name',
       sorter: true,
       copyable: true,
@@ -65,45 +101,15 @@ const index = () => {
       }
     },
     {
-      title: '路由路径',
-      key: 'path',
-      dataIndex: 'path',
+      title: '编码',
+      key: 'code',
+      dataIndex: 'code',
       ellipsis: true
     },
     {
-      title: '组件路径',
-      key: 'componentPath',
-      dataIndex: 'componentPath',
-      ellipsis: true
-    },
-    {
-      title: '菜单名称',
-      key: 'title',
-      dataIndex: 'title',
-      ellipsis: true
-    },
-    {
-      title: '图标',
-      key: 'icon',
-      dataIndex: 'icon',
-      ellipsis: true
-    },
-    {
-      title: '菜单显隐',
-      key: 'hidden',
-      dataIndex: 'hidden',
-      ellipsis: true
-    },
-    {
-      title: '缓存',
-      key: 'keepalive',
-      dataIndex: 'keepalive',
-      ellipsis: true
-    },
-    {
-      title: '层级',
-      key: 'level',
-      dataIndex: 'level',
+      title: '备注',
+      key: 'remark',
+      dataIndex: 'remark',
       ellipsis: true
     },
     {
@@ -132,11 +138,10 @@ const index = () => {
     const hide = message.loading('删除中')
     if (!selectedRows) return true
     try {
-      await setTimeout(() => {
-        console.log('remove')
-      }, 500)
       hide()
-      message.success('删除成功')
+      await roleApi.delRoleApi({ id: selectedRows.id })
+      // 刷新
+      actionRef?.current?.reload()
       return true
     } catch (error) {
       hide()
@@ -147,11 +152,8 @@ const index = () => {
   const handleUpdate = async fields => {
     const hide = message.loading('修改中')
     try {
-      await setTimeout(() => {
-        console.log('update', fields)
-      }, 500)
       hide()
-      message.success('修改成功')
+      updateUserInfoFn(fields)
       return true
     } catch (error) {
       hide()
@@ -160,6 +162,27 @@ const index = () => {
     }
   }
 
+  // 保存:新增/更新
+  const updateUserInfoFn = async params => {
+    if (modalFormMode.mode === 'add') {
+      // 新增
+      await roleApi.addRoleApi({
+        ...params,
+        menuIds: params.menus?.length ? params.menus.map(m => m.value) : []
+      })
+      // 刷新
+      actionRef?.current?.reload()
+      return true
+    }
+    // 编辑
+    const res = await roleApi.updateRolesByIdApi({ ...drawerFormValues, ...params, menuIds: params.menus.map(m => m.value) })
+    if (res) {
+      // 刷新
+      actionRef?.current?.reload()
+      return true
+    }
+    return false
+  }
   return (
     <>
       <ProTable<FormItemKeys>
@@ -169,13 +192,12 @@ const index = () => {
         cardBordered
         request={async (params = {}, sort, filter) => {
           console.log(sort, '----', filter, '----', params)
-          const data: any = await findMenuListApi({
+          const res: any = await roleApi.findRoleListByPageApi({
             ...params,
             pageSize: params.pageSize as number,
             pageNumber: params.current as number,
             keywords: ''
           })
-          const res: any = data?.data
           return res
         }}
         editable={{
@@ -188,7 +210,7 @@ const index = () => {
           }
         }}
         columnsState={{
-          persistenceKey: 'pro-table-singe-demos',
+          persistenceKey: 'pro-table-singe-role-manage',
           persistenceType: 'localStorage',
           onChange(value) {
             console.log('value: ', value)
@@ -235,16 +257,23 @@ const index = () => {
             ]
           }
         }}
-        onFinish={async () => {
-          message.success('提交成功')
-          return true
+        onFinish={async values => {
+          return updateUserInfoFn(values)
         }}>
         <ProForm.Group>
-          <ProFormText width="md" name="name" label="路由名" placeholder="请输入" disabled={modalFormMode.mode === 'cat'} />
           <ProFormText
             width="md"
-            name="path"
-            label="路由路径"
+            name="name"
+            label="名称"
+            initialValue={drawerFormValues?.name}
+            placeholder="请输入"
+            disabled={modalFormMode.mode === 'cat'}
+          />
+          <ProFormText
+            width="md"
+            name="code"
+            label="编码"
+            initialValue={drawerFormValues?.code}
             tooltip="编码不可重复具唯一性"
             disabled={modalFormMode.mode === 'cat'}
             placeholder="请输入"
@@ -252,37 +281,64 @@ const index = () => {
         </ProForm.Group>
         <ProForm.Group>
           <ProFormText
+            name="remark"
             width="md"
-            name="componentPath"
+            initialValue={drawerFormValues?.remark}
             disabled={modalFormMode.mode === 'cat'}
-            label="组件路径"
-            placeholder="请输入"
+            label="备注"
+            placeholder="请输入备注"
           />
-          <ProFormText width="md" name="title" disabled={modalFormMode.mode === 'cat'} label="菜单名称" placeholder="请输入" />
+          {modalFormMode.mode === 'cat' ? (
+            <ProFormDateRangePicker name="createTime" initialValue={drawerFormValues?.createTime} disabled label="创建时间" />
+          ) : null}
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormText width="md" name="icon" disabled={modalFormMode.mode === 'cat'} label="图标" placeholder="请输入" />
-          <ProFormSelect
-            width="md"
-            options={[
-              {
-                value: 1,
-                label: '显示'
-              },
-              {
-                value: 0,
-                label: '隐藏'
-              }
-            ]}
-            name="hidden"
-            disabled={modalFormMode.mode === 'cat'}
+          <ProFormTreeSelect
+            name="menus"
+            label="菜单权限"
             placeholder="请选择"
-            label="菜单显隐"
+            allowClear
+            // secondary
+            disabled={modalFormMode.mode === 'cat'}
+            width="lg"
+            request={async () => {
+              const data: any = await menuApi.findMenuTreeApi({
+                parentId: 'root'
+              })
+              const newExpandedKeys: string[] = []
+              const render = treeDatas => {
+                // 获取到所有可展开的父节点
+                treeDatas.map((item: any) => {
+                  newExpandedKeys.push(item.id)
+                  item.value = item.id
+                  if (item?.children?.length) {
+                    render(item.children)
+                  }
+                })
+              }
+              render(data)
+              // setMenusTreeArr(data)
+              return data
+            }}
+            // tree-select args
+            fieldProps={{
+              showArrow: false,
+              filterTreeNode: true,
+              showSearch: true,
+              treeCheckable: true,
+              dropdownMatchSelectWidth: true,
+              treeCheckStrictly: true,
+              treeDefaultExpandAll: true,
+              labelInValue: true,
+              autoClearSearchValue: true,
+              multiple: true,
+              // treeNodeFilterProp: 'id',
+              fieldNames: {
+                label: 'title',
+                value: 'id'
+              }
+            }}
           />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSwitch width="md" name="keepalive" label="缓存" disabled={modalFormMode.mode === 'cat'} />
-          <ProFormText width="md" name="level" disabled={modalFormMode.mode === 'cat'} label="层级" placeholder="请输入" />
         </ProForm.Group>
       </DrawerForm>
     </>

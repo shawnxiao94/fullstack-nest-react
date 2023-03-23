@@ -10,9 +10,15 @@ export function getRedisKey(moduleKeyPrefix: RedisKeyPrefix, id: string | number
   return `${moduleKeyPrefix}${id}`
 }
 
-export const clone = <T extends BaseEntityModel, S, K extends keyof T>(target: T, source: S, exclude?: K[]): T => {
+export const clone = <T extends BaseEntityModel, S, K extends keyof T>(
+  target: T,
+  source: S,
+  exclude?: K[]
+): T => {
   if (!exclude) {
-    exclude = exclude ? exclude.push(...(['createTime', 'updateTime'] as any)) : (['createTime', 'updateTime'] as any)
+    exclude = exclude
+      ? exclude.push(...(['createTime', 'updateTime'] as any))
+      : (['createTime', 'updateTime'] as any)
   }
   for (const key of Object.keys(source)) {
     if (exclude?.includes(key as any)) continue
@@ -25,29 +31,33 @@ export const clone = <T extends BaseEntityModel, S, K extends keyof T>(target: T
 // 非递归扁平转树
 /*
  * @flatArr 扁平数组
- * @reference 带对象引用否，默认false
  */
-export function flatArrToTree(flatArr, reference = false) {
-  if (reference) {
-    // 引用场景
-    // 利用两层filter实现
-    const data = flatArr.filter((item) => {
-      item.children = flatArr.filter((e) => {
-        return item.id === e.parentId
-      })
-      return !item.parentId
-    })
-    return data
-  }
+export function flatArrToTree(flatArr) {
   const result = []
-  const map = {}
+  const itemMap = {}
   for (const item of flatArr) {
-    map[item.id] = { ...item, children: [] }
+    const id = item.id
+    const pid = item.parentId
+    if (!itemMap[id]) {
+      itemMap[id] = {
+        children: []
+      }
+    }
+    itemMap[id] = {
+      ...item,
+      children: itemMap[id]['children']
+    }
+    const treeItem = itemMap[id]
+
     if (item.parentId === 'root') {
-      const newMap = map[item.id]
-      result.push(newMap)
+      result.push(treeItem)
     } else {
-      map[item.parentId].children.push(map[item.id])
+      if (!itemMap[pid]) {
+        itemMap[pid] = {
+          children: []
+        }
+      }
+      itemMap[pid].children.push(treeItem)
     }
   }
   return result

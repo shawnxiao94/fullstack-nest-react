@@ -26,10 +26,28 @@ import { ActionLogEntity } from './action-log/entities/action-log.entity'
 import { ActionLogService } from './action-log/action-log.service'
 import { ActionLogController } from './action-log/action-log.controller'
 
+import { ROOT_ROLE_ID } from '@/modules/admin/admin.constants'
+import { rootRoleIdProvider } from '../core/provider/root-role-id.provider'
+
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, DeptEntity, RoleEntity, MenuEntity, ActionLogEntity])],
-  controllers: [DeptController, UserController, RoleController, MenuController, ActionLogController],
-  providers: [UserService, DeptService, RoleService, MenuService, ActionLogService],
-  exports: [UserService, RoleService, DeptService]
+  imports: [
+    TypeOrmModule.forFeature([UserEntity, DeptEntity, RoleEntity, MenuEntity, ActionLogEntity])
+  ],
+  controllers: [
+    DeptController,
+    UserController,
+    RoleController,
+    MenuController,
+    ActionLogController
+  ],
+  providers: [
+    rootRoleIdProvider(),
+    UserService,
+    DeptService,
+    RoleService,
+    MenuService,
+    ActionLogService
+  ],
+  exports: [ROOT_ROLE_ID, UserService, RoleService, DeptService]
 })
 export class SystemModule {}

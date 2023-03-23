@@ -33,13 +33,14 @@ export class AuthGuard implements CanActivate {
     const url = request.url
     const path = url.split('?')[0]
     const token = request.headers['authorization'] as string
-
+    console.log('request.headers', request.headers)
     if (isEmpty(token)) {
       throw new ApiException(11001)
     }
     try {
       // 挂载对象到当前请求上
       request[ADMIN_USER] = this.jwtService.verify(token)
+      console.log('request[ADMIN_USER]', request[ADMIN_USER])
     } catch (e) {
       // 无法通过token校验
       throw new ApiException(11001)

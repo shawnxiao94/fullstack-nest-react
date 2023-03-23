@@ -33,7 +33,7 @@
     "@ant-design/pro-components": "^2.4.0",
     "@reduxjs/toolkit": "^1.9.1",
     "ahooks": "^3.7.5",
-    "antd": "^4.24.6",
+    "antd": "^4.24.8",
     "axios": "^1.2.1",
     "buffer": "^6.0.3",
     "crypto-js": "^3.3.0",

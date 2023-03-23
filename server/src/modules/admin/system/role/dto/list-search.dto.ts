@@ -13,7 +13,6 @@ export class KeywordsListPageDto extends PageOptionsDto {
   keywords: string
 
   @ApiProperty({ description: '排序字段', required: false })
-  @IsString()
   @Type(() => String)
   orderBy: string
 }
@@ -28,7 +27,6 @@ export class KeywordsListDto {
   keywords: string
 
   @ApiProperty({ description: '排序字段', required: false })
-  @IsString()
   @Type(() => String)
   orderBy: string
 }

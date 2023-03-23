@@ -15,17 +15,19 @@ const config = {
   // 默认地址请求地址，可在 .env 开头文件中修改
   baseURL: '.' as string,
   // baseURL: import.meta.env.VITE_API_URL as string,
+  headers: { 'Content-Type': 'application/json;charset=utf-8' },
   // 设置超时时间（10s）
   timeout: 10000,
   // 跨域时候允许携带凭证
-  withCredentials: true
+  withCredentials: true,
+  credentials: 'include'
 }
 
 class RequestHttp {
   service: AxiosInstance
   public constructor(config: AxiosRequestConfig) {
     // 实例化axios
-    this.service = axios.create(config)
+    this.service = axios.create(Object.assign({}, config))
 
     /**
      * @description 请求拦截器
@@ -53,12 +55,16 @@ class RequestHttp {
      */
     this.service.interceptors.response.use(
       (response: AxiosResponse) => {
-        const { data, config } = response
+        const { data, config }: any = response
         NProgress.done()
         // * 在请求结束后，移除本次请求(关闭loading)
         axiosCanceler.removePending(config)
         tryHideFullScreenLoading()
-        // * 登录失效（code == 599）
+        // 走本地JSON文件场景
+        if (config?.url?.includes('.json')) {
+          return Promise.resolve(response)
+        }
+        // * 登录失效（code == 401）
         if (data.code === ResultEnum.OVERDUE) {
           store.dispatch(setToken(''))
           message.error(data.message)
@@ -67,16 +73,21 @@ class RequestHttp {
         }
         // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
         if (data.code !== ResultEnum.OVERDUE && data.code !== ResultEnum.SUCCESS) {
-          message.error(data.message)
+          message.error(data.msg)
           return Promise.reject(data)
         }
         // * 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）
         return data.data
       },
+      // 对响应错误做点什么
       async (error: AxiosError) => {
-        const { response } = error
+        const { response }: any = error
         NProgress.done()
         tryHideFullScreenLoading()
+        // 走本地JSON文件场景
+        if (response.config.url.includes('.json')) {
+          return Promise.resolve(response)
+        }
         // 请求超时单独判断，请求超时没有 response
         if (error.message.indexOf('timeout') !== -1) message.error('请求超时，请稍后再试')
         // 根据响应的错误状态码，做不同的处理
@@ -89,6 +100,9 @@ class RequestHttp {
   }
 
   // * 常用请求方法封装
+  request(config: AxiosRequestConfig): Promise<AxiosResponse> {
+    return this.service.request(config)
+  }
   get<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
     return this.service.get(url, { params, ..._object })
   }
@@ -96,6 +110,9 @@ class RequestHttp {
     return this.service.post(url, params, _object)
   }
   put<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
+    return this.service.put(url, params, _object)
+  }
+  patch<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
     return this.service.put(url, params, _object)
   }
   delete<T>(url: string, params?: any, _object = {}): Promise<ResultData<T>> {

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
 import { setUserInfo } from '@/store/app'
 
-import WebSocketDemo from './components/WebSocketDemo'
+import WebSocketDemo from './components/webSocketDemo'
 
 function index() {
   const { app } = useSelector((state: RootState) => state)

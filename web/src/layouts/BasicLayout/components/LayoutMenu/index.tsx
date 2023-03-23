@@ -6,16 +6,19 @@ import type { MenuProps } from 'antd'
 import * as Icons from '@ant-design/icons'
 import { setAuthRouter, setBreadcrumbList, setMenuList } from '@/store/app'
 import Logo from './components/Logo'
-import { getMenuList } from '@/apis/modules/login'
+import { useRoleManageApi } from '@/apis/modules/sysManage'
 import { findAllBreadcrumb, getOpenKeys, handleRouter, searchRoute } from '@/utils'
 import './index.less'
 
 // 定义 menu 类型
 type MenuItem = Required<MenuProps>['items'][number]
 
+const roleApi = useRoleManageApi()
+
 const LayoutMenu = (props: any) => {
   const { pathname } = useLocation()
   const { isCollapse, userInfo, setBreadcrumbList, setAuthRouter, setMenuList: setMenuListAction } = props
+  console.log(findAllBreadcrumb, setBreadcrumbList)
   // 获取菜单列表并处理成 antd menu 需要的格式
   const [menuList, setMenuList] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -55,10 +58,17 @@ const LayoutMenu = (props: any) => {
   // 动态渲染 Icon 图标
   const customIcons: { [key: string]: any } = Icons
   const addIcon = (name: string) => {
-    return React.createElement(customIcons[name])
+    let n = <></>
+    try {
+      n = React.createElement(customIcons[name])
+    } catch (err) {
+      console.log(err)
+    }
+    return n
   }
   // 处理后台返回菜单 key 值为 antd 菜单需要的 key 值
-  const deepLoopFloat = (menuList: Menu.MenuOptions[], newArr: MenuItem[] = []) => {
+  const deepLoopFloat = (menuList: Menu.MenuOptions[]) => {
+    const newArr: MenuItem[] = []
     menuList.forEach((item: Menu.MenuOptions) => {
       // 下面判断代码解释 *** !item?.children?.length   ==>   (!item.children || item.children.length === 0)
       if (!item?.children?.length) return newArr.push(getItem(item.title, item.path, addIcon(item.icon!)))
@@ -70,19 +80,19 @@ const LayoutMenu = (props: any) => {
   const getMenuData = async () => {
     setLoading(true)
     try {
-      const { data }: any = await getMenuList({
+      const res: any = await roleApi.findMenuPermsByRoleIdsApi({
         ids: userInfo?.roles?.length ? userInfo.roles.map(r => r.id) : [],
         requireMenus: true,
         treeType: true
       })
-      if (!data && data?.menuList) return
-      setMenuList(deepLoopFloat(data.menuList))
+      if (!res?.treeArr?.length) return
+      setMenuList(deepLoopFloat(res.treeArr))
       // 存储处理过后的所有面包屑导航栏到 redux 中
-      setBreadcrumbList(findAllBreadcrumb(data.menuList))
+      setBreadcrumbList(findAllBreadcrumb(res.treeArr))
       // 把路由菜单处理成一维数组，存储到 redux 中，做菜单权限判断
-      const dynamicRouter = handleRouter(data.menuList)
+      const dynamicRouter = handleRouter(res.treeArr)
       setAuthRouter(dynamicRouter)
-      setMenuListAction(data.menuList)
+      setMenuListAction(res.treeArr)
     } finally {
       setLoading(false)
     }

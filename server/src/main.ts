@@ -11,8 +11,13 @@ import { setupSwagger } from './setupSwagger'
 
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import { mw as requestIpMw } from 'request-ip'
+const express = require('express')
 
-const GlobalPrefix = 'nestApi'
+import { logger } from './common/libs/log4js/logger.middleware'
+
+const GlobalPrefix = process.env.GLOBAL_PREFIX
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
   //设置全局前缀
@@ -34,9 +39,16 @@ async function bootstrap() {
       max: 1000 // 限制15分钟内最多只能访问1000次
     })
   )
+  // 获取真实 ip
+  app.use(requestIpMw({ attributeName: 'ip' }))
 
   // web 安全，防常见漏洞
   app.use(helmet())
+
+  // 日志
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: true }))
+  app.use(logger)
 
   await app.listen(process.env.SERVER_PORT, '0.0.0.0')
   const serverUrl = await app.getUrl()

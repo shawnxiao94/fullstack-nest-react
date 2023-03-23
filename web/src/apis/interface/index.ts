@@ -28,7 +28,7 @@ export namespace Login {
   export interface ReqLoginForm {
     account: string
     password: string
-    verifyCode: number
+    verifyCode: string
     captchaId: string
     hashClient: string
     ivClient: string
@@ -48,7 +48,7 @@ export namespace Login {
   }
 }
 // * 系统管理
-export namespace SystemManagement {
+export namespace SysManage {
   export interface ReqUserManageForm {
     pageSize: number
     pageNumber: number
@@ -57,8 +57,14 @@ export namespace SystemManagement {
     roleIds: string[]
     deptId: string
   }
-  export interface ResUserManageList {
-    data: any[]
+  export interface ReqUserManageUserInfo {
+    id: string
+    status?: number
+    roleIds?: string[]
+    deptId?: string
+    nickName?: string
+    remark?: string
+    sex?: string
   }
   export interface ReqRoleManagementForm {
     pageSize: number
@@ -66,15 +72,27 @@ export namespace SystemManagement {
     keywords: string
     orderBy?: string
   }
-  export interface ResRoleManagementList {
-    data: any[]
-  }
   export interface ReqMenuManagementForm {
     pageSize: number
     pageNumber: number
     keywords: string
   }
-  export interface ResMenuManagementList {
-    data: any[]
+  export interface ReqUpdateMenu {
+    type: number
+    parentId: string
+    name: string
+    path: string
+    componentPath: string
+    redirect: string
+    title: string
+    icon: string
+    sort: number
+    level: number
+    hidden: boolean
+    keepalive: boolean
+    openMode: number
+    isLink: boolean
+    isIframe: boolean
+    id: string
   }
 }

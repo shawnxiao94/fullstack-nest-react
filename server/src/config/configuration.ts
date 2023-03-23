@@ -2,7 +2,8 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 
 export const getConfiguration = () =>
   ({
-    rootRoleId: parseInt(process.env.ROOT_ROLE_ID || '1'),
+    rootRoleId: process.env.ROOT_ROLE_ID || 'c61fad2f-56ed-4efd-bb06-890f8bc6d2e2',
+    globalPreFix: process.env.GLOBAL_PREFIX, // 接口前缀
     // nodemailer config
     mailer: {
       host: 'xxx',
@@ -61,6 +62,9 @@ export const getConfiguration = () =>
       maxFiles: process.env.LOGGER_MAX_FILES,
       errorLogName: process.env.LOGGER_ERROR_FILENAME,
       appLogName: process.env.LOGGER_APP_FILENAME
+    },
+    fileUpload: {
+      dir: process.env.FILE_UPLOAD
     },
     // swagger
     swagger: {

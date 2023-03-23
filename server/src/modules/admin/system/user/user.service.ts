@@ -157,7 +157,7 @@ export class UserService {
 
   /** 根据id更新用户信息及关联的角色 */
   async updateById(dto: UpdateUserDto): Promise<ResultData> {
-    const { id, status, nickName, remark, sex, roleIds, deptId } = dto
+    const { id, status, nickName, name, remark, sex, roleIds, deptId } = dto
     const resArr = await this.usersRepository.find({ where: { id }, relations: ['roles', 'dept'] })
     // const resArr = await this.usersRepository.createQueryBuilder().relation('sys_user', 'roles').of(id).loadMany()
     const userEntity = resArr[0]
@@ -167,7 +167,7 @@ export class UserService {
     const result = await this.usersRepository
       .createQueryBuilder()
       .update(UserEntity)
-      .set({ status, nickName, remark, sex, updateTime: new Date() })
+      .set({ status, name, nickName, remark, sex, updateTime: new Date() })
       .where('id = :id', { id }) // 或者.whereInIds(id)
       .execute() // 執行d
     if (result.affected > 0) {
@@ -234,7 +234,7 @@ export class UserService {
     return res
   }
 
-  /** 查询单个用户及关联的角色 */
+  /** 根据id查询单个用户及关联的角色 */
   async findInfoById(dto: InfoSearchDto): Promise<ResultData> {
     const user = await this.findOneByIdFn(dto)
     if (!user) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
@@ -412,8 +412,13 @@ export class UserService {
   }
 
   async remove(id: string): Promise<ResultData> {
-    const existing = await this.usersRepository.findOne({ where: { id } })
+    const existing = await this.usersRepository.findOne({ where: { id }, relations: ['roles'] })
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已被删除')
+    if (existing.roles?.length)
+      return ResultData.fail(
+        AppHttpCode.PARAM_INVALID,
+        '当前用户有关联角色咱不能删除，请先解绑角色'
+      )
     await this.usersRepository.remove(existing)
     return ResultData.ok()
   }
