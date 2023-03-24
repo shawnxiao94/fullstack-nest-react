@@ -5,12 +5,11 @@ import {
   TableDropdown,
   DrawerForm,
   ProFormText,
-  ProForm,
   ProFormDateRangePicker,
   ProFormSelect,
   ProFormSwitch
 } from '@ant-design/pro-components'
-import { Button, Space, Tag, message, Switch } from 'antd'
+import { Row, Col, Button, Space, Tag, message, Switch } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useUserManageApi, useRoleManageApi } from '@/apis/modules/sysManage'
 
@@ -366,107 +365,125 @@ const index = () => {
         onFinish={async values => {
           return updateUserInfoFn(values)
         }}>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="name"
-            label="名称"
-            tooltip="最长为24 位"
-            placeholder="请输入名称"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-          <ProFormText
-            width="md"
-            name="account"
-            label="账号"
-            initialValue={drawerFormValues?.account}
-            tooltip="账号不可重复具唯一性"
-            disabled={modalFormMode.mode !== 'add'}
-            placeholder="请输入账号"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="nickName"
-            initialValue={drawerFormValues?.nickName}
-            label="昵称"
-            disabled={modalFormMode.mode === 'cat'}
-            placeholder="请输入昵称"
-          />
-          <ProFormText
-            width="md"
-            name="email"
-            initialValue={drawerFormValues?.email}
-            disabled={modalFormMode.mode === 'cat'}
-            label="邮箱"
-            placeholder="请输入邮箱"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="mobile"
-            initialValue={drawerFormValues?.mobile}
-            label="手机"
-            disabled={modalFormMode.mode === 'cat'}
-            placeholder="请输入手机"
-          />
-          <ProFormSwitch
-            width="md"
-            name="status"
-            initialValue={drawerFormValues?.status}
-            fieldProps={{ checkedChildren: '开启', unCheckedChildren: '关闭' }}
-            label="账号状态"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSelect
-            width="md"
-            options={rolesOption}
-            name="roles"
-            initialValue={drawerFormValues?.roles}
-            fieldProps={{
-              mode: 'multiple'
-            }}
-            disabled={modalFormMode.mode === 'cat'}
-            label="关联角色"
-          />
-          <ProFormText
-            width="md"
-            name="dept"
-            initialValue={drawerFormValues?.dept}
-            disabled={modalFormMode.mode === 'cat'}
-            label="部门"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="avatar"
-            initialValue={drawerFormValues?.avatar}
-            disabled={modalFormMode.mode === 'cat'}
-            label="头像"
-          />
-          <ProFormSwitch
-            width="md"
-            name="sex"
-            initialValue={drawerFormValues?.sex}
-            fieldProps={{ checkedChildren: '男', unCheckedChildren: '女' }}
-            label="性别"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-        </ProForm.Group>
-        <ProFormText
-          name="remark"
-          disabled={modalFormMode.mode === 'cat'}
-          label="备注"
-          initialValue={drawerFormValues?.remark}
-          placeholder="请输入备注"
-        />
-        <ProFormText name="address" disabled={modalFormMode.mode === 'cat'} label="地址" initialValue="xxxx地址" />
-        {modalFormMode.mode === 'cat' ? <ProFormDateRangePicker name="createTime" disabled label="创建时间" /> : null}
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <ProFormText
+              name="name"
+              label="名称"
+              tooltip="最长为24 位"
+              placeholder="请输入名称"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              name="account"
+              label="账号"
+              initialValue={drawerFormValues?.account}
+              tooltip="账号不可重复具唯一性"
+              disabled={modalFormMode.mode !== 'add'}
+              placeholder="请输入账号"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="nickName"
+              initialValue={drawerFormValues?.nickName}
+              label="昵称"
+              disabled={modalFormMode.mode === 'cat'}
+              placeholder="请输入昵称"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="email"
+              initialValue={drawerFormValues?.email}
+              disabled={modalFormMode.mode === 'cat'}
+              label="邮箱"
+              placeholder="请输入邮箱"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="mobile"
+              initialValue={drawerFormValues?.mobile}
+              label="手机"
+              disabled={modalFormMode.mode === 'cat'}
+              placeholder="请输入手机"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormSwitch
+              width="md"
+              name="status"
+              initialValue={drawerFormValues?.status}
+              fieldProps={{ checkedChildren: '开启', unCheckedChildren: '关闭' }}
+              label="账号状态"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormSelect
+              width="md"
+              options={rolesOption}
+              name="roles"
+              initialValue={drawerFormValues?.roles}
+              fieldProps={{
+                mode: 'multiple'
+              }}
+              disabled={modalFormMode.mode === 'cat'}
+              label="关联角色"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="dept"
+              initialValue={drawerFormValues?.dept}
+              disabled={modalFormMode.mode === 'cat'}
+              label="部门"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="avatar"
+              initialValue={drawerFormValues?.avatar}
+              disabled={modalFormMode.mode === 'cat'}
+              label="头像"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormSwitch
+              width="md"
+              name="sex"
+              initialValue={drawerFormValues?.sex}
+              fieldProps={{ checkedChildren: '男', unCheckedChildren: '女' }}
+              label="性别"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              name="remark"
+              disabled={modalFormMode.mode === 'cat'}
+              label="备注"
+              initialValue={drawerFormValues?.remark}
+              placeholder="请输入备注"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText name="address" disabled={modalFormMode.mode === 'cat'} label="地址" initialValue="xxxx地址" />
+          </Col>
+          {modalFormMode.mode === 'cat' ? (
+            <Col span={12}>
+              <ProFormDateRangePicker name="createTime" disabled label="创建时间" />
+            </Col>
+          ) : null}
+        </Row>
       </DrawerForm>
     </>
   )

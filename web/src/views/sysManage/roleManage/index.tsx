@@ -1,10 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
-import { ProTable, DrawerForm, ProFormText, ProForm, ProFormDateRangePicker, ProFormTreeSelect } from '@ant-design/pro-components'
-import { Button, message } from 'antd'
+import { ProTable, DrawerForm, ProFormText, ProFormDateRangePicker } from '@ant-design/pro-components'
+import { Row, Col, Tree, Button, message } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useRoleManageApi, useMenuManageApi } from '@/apis/modules/sysManage'
 
+const { TreeNode } = Tree
 type FormItemKeys = {
   createTime: string
   id: string
@@ -23,7 +24,9 @@ const index = () => {
   const [modalFormMode, setModalFormMode] = useState({ title: '新增', mode: 'add' })
   const [drawerFormValues, setDrawerFormValues] = useState<FormItemKeys>(null as any)
   const actionRef = useRef<ActionType>()
-  // const [menusOfRole, setMenusOfRole] = useState<any[]>([])
+  // tree树形
+  const [treeData, setTreeData] = useState([])
+  const [expandedKeys, setExpandedKeys] = useState([])
 
   const addFn = () => {
     setModalFormMode({ title: '新增', mode: 'add' })
@@ -183,6 +186,49 @@ const index = () => {
     }
     return false
   }
+
+  const handleValuesChange = (changedValues, allValues) => {
+    console.log(allValues)
+  }
+
+  const handleExpand = expandedKeys => {
+    setExpandedKeys(expandedKeys)
+  }
+
+  const renderTreeNodes = data =>
+    data.map(item => (
+      <TreeNode key={item.key} title={item.title}>
+        {item.children && renderTreeNodes(item.children)}
+      </TreeNode>
+    ))
+
+  // 获取tree树形数据
+  const findMenuTreeFn = async () => {
+    const data: any = await menuApi.findMenuTreeApi({
+      parentId: 'root'
+    })
+    const newExpandedKeys: string[] = []
+    const render = treeDatas => {
+      // 获取到所有可展开的父节点
+      treeDatas.map((item: any) => {
+        newExpandedKeys.push(item.id)
+        item.value = item.id
+        if (item?.children?.length) {
+          render(item.children)
+        }
+      })
+    }
+    render(data)
+    return data
+  }
+
+  useEffect(() => {
+    findMenuTreeFn().then(res => {
+      setTreeData(res.data)
+      setExpandedKeys(res.data.map(item => item.key))
+    })
+  }, [])
+
   return (
     <>
       <ProTable<FormItemKeys>
@@ -259,40 +305,51 @@ const index = () => {
         }}
         onFinish={async values => {
           return updateUserInfoFn(values)
-        }}>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="name"
-            label="名称"
-            initialValue={drawerFormValues?.name}
-            placeholder="请输入"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-          <ProFormText
-            width="md"
-            name="code"
-            label="编码"
-            initialValue={drawerFormValues?.code}
-            tooltip="编码不可重复具唯一性"
-            disabled={modalFormMode.mode === 'cat'}
-            placeholder="请输入"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            name="remark"
-            width="md"
-            initialValue={drawerFormValues?.remark}
-            disabled={modalFormMode.mode === 'cat'}
-            label="备注"
-            placeholder="请输入备注"
-          />
-          {modalFormMode.mode === 'cat' ? (
-            <ProFormDateRangePicker name="createTime" initialValue={drawerFormValues?.createTime} disabled label="创建时间" />
-          ) : null}
-        </ProForm.Group>
-        <ProForm.Group>
+        }}
+        onValuesChange={handleValuesChange}>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="name"
+              label="名称"
+              initialValue={drawerFormValues?.name}
+              placeholder="请输入"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              width="md"
+              name="code"
+              label="编码"
+              initialValue={drawerFormValues?.code}
+              tooltip="编码不可重复具唯一性"
+              disabled={modalFormMode.mode === 'cat'}
+              placeholder="请输入"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              name="remark"
+              width="md"
+              initialValue={drawerFormValues?.remark}
+              disabled={modalFormMode.mode === 'cat'}
+              label="备注"
+              placeholder="请输入备注"
+            />
+            {modalFormMode.mode === 'cat' ? (
+              <Col span={12}>
+                <ProFormDateRangePicker name="createTime" initialValue={drawerFormValues?.createTime} disabled label="创建时间" />
+              </Col>
+            ) : null}
+          </Col>
+          <Col span={12}>
+            <Tree treeData={treeData} expandedKeys={expandedKeys} onExpand={handleExpand}>
+              {renderTreeNodes(treeData)}
+            </Tree>
+          </Col>
+          {/* <ProForm.Group>
           <ProFormTreeSelect
             name="menus"
             label="菜单权限"
@@ -339,7 +396,8 @@ const index = () => {
               }
             }}
           />
-        </ProForm.Group>
+        </ProForm.Group> */}
+        </Row>
       </DrawerForm>
     </>
   )

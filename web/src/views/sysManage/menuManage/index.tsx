@@ -4,13 +4,12 @@ import {
   ProTable,
   DrawerForm,
   ProFormText,
-  ProForm,
   ProFormSwitch,
   ProFormDigit,
   ProFormRadio,
   ProFormTreeSelect
 } from '@ant-design/pro-components'
-import { Button, message, Space, Tag, Switch } from 'antd'
+import { Row, Col, Button, message, Space, Tag, Switch } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useMenuManageApi } from '@/apis/modules/sysManage'
 
@@ -215,6 +214,19 @@ const index = () => {
     return false
   }
 
+  const handleExpand = (expanded, record) => {
+    const key = record.key
+    const index = expandedRowKeys.indexOf(key)
+
+    if (index > -1) {
+      // 已经展开，需要收起
+      setExpandedRowKeys(expandedRowKeys.filter(k => k !== key))
+    } else {
+      // 未展开，需要展开
+      setExpandedRowKeys([...expandedRowKeys, key])
+    }
+  }
+
   return (
     <>
       <ProTable<FormItemKeys>
@@ -224,8 +236,8 @@ const index = () => {
         cardBordered
         bordered
         expandable={{
-          defaultExpandAllRows: true,
-          expandedRowKeys
+          expandedRowKeys,
+          onExpand: handleExpand
         }}
         request={async (params: any, sort, filter) => {
           console.log(sort, '----', filter, '----', params)
@@ -313,123 +325,120 @@ const index = () => {
         onFinish={async values => {
           return await onFinishSave(values)
         }}>
-        <ProForm.Group>
-          <ProFormRadio.Group
-            name="type"
-            label="菜单类型"
-            width="md"
-            initialValue={drawerFormValues?.type}
-            disabled={modalFormMode.mode === 'cat'}
-            rules={[{ required: true, message: '请选择!', type: 'number' }]}
-            options={[
-              {
-                label: '目录',
-                value: 0
-              },
-              {
-                label: '菜单',
-                value: 1
-              },
-              {
-                label: '权限按钮',
-                value: 2
-              }
-            ]}
-          />
-          <ProFormTreeSelect
-            initialValue={drawerFormValues?.parentId}
-            width="md"
-            name="parentId"
-            label="上级菜单"
-            placeholder="请选择"
-            rules={[{ required: true, message: '请选择!', type: 'string' }]}
-            request={async () => {
-              return [{ value: 'root', label: '顶级', title: '顶级', children: treeDataArr }]
-            }}></ProFormTreeSelect>
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            initialValue={drawerFormValues?.name}
-            width="md"
-            name="name"
-            label="路由名"
-            placeholder="请输入"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-          <ProFormText
-            initialValue={drawerFormValues?.path}
-            rules={[{ required: true, message: '请选择!', type: 'string' }]}
-            width="md"
-            name="path"
-            label="路由路径"
-            tooltip="编码不可重复具唯一性"
-            disabled={modalFormMode.mode === 'cat'}
-            placeholder="请输入"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            initialValue={drawerFormValues?.componentPath}
-            width="md"
-            name="componentPath"
-            disabled={modalFormMode.mode === 'cat'}
-            label="组件路径"
-            placeholder="请输入"
-          />
-          <ProFormText
-            initialValue={drawerFormValues?.title}
-            width="md"
-            name="title"
-            disabled={modalFormMode.mode === 'cat'}
-            label="菜单名称"
-            placeholder="请输入"
-            rules={[{ required: true, message: '请选择!', type: 'string' }]}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            initialValue={drawerFormValues?.icon}
-            width="md"
-            name="icon"
-            disabled={modalFormMode.mode === 'cat'}
-            label="图标"
-            placeholder="请输入"
-          />
-          <ProFormSwitch
-            initialValue={drawerFormValues?.hidden}
-            width="md"
-            name="hidden"
-            label="菜单显隐"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSwitch
-            initialValue={drawerFormValues?.keepalive}
-            width="md"
-            name="keepalive"
-            label="缓存"
-            disabled={modalFormMode.mode === 'cat'}
-          />
-          <ProFormDigit
-            initialValue={drawerFormValues?.level}
-            width="md"
-            name="level"
-            disabled={modalFormMode.mode === 'cat'}
-            label="层级"
-            placeholder="请输入"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormDigit
-            initialValue={drawerFormValues?.sort}
-            width="md"
-            name="sort"
-            disabled={modalFormMode.mode === 'cat'}
-            label="排序"
-            placeholder="请输入"
-          />
-        </ProForm.Group>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <ProFormRadio.Group
+              name="type"
+              label="菜单类型"
+              initialValue={drawerFormValues?.type}
+              disabled={modalFormMode.mode === 'cat'}
+              rules={[{ required: true, message: '请选择!', type: 'number' }]}
+              options={[
+                {
+                  label: '目录',
+                  value: 0
+                },
+                {
+                  label: '菜单',
+                  value: 1
+                },
+                {
+                  label: '权限按钮',
+                  value: 2
+                }
+              ]}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormTreeSelect
+              initialValue={drawerFormValues?.parentId}
+              name="parentId"
+              label="上级菜单"
+              placeholder="请选择"
+              rules={[{ required: true, message: '请选择!', type: 'string' }]}
+              request={async () => {
+                return [{ value: 'root', label: '顶级', title: '顶级', children: treeDataArr }]
+              }}></ProFormTreeSelect>
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              initialValue={drawerFormValues?.name}
+              name="name"
+              label="路由名"
+              placeholder="请输入"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              initialValue={drawerFormValues?.path}
+              rules={[{ required: true, message: '请选择!', type: 'string' }]}
+              name="path"
+              label="路由路径"
+              tooltip="编码不可重复具唯一性"
+              disabled={modalFormMode.mode === 'cat'}
+              placeholder="请输入"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              initialValue={drawerFormValues?.componentPath}
+              name="componentPath"
+              disabled={modalFormMode.mode === 'cat'}
+              label="组件路径"
+              placeholder="请输入"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              initialValue={drawerFormValues?.title}
+              name="title"
+              disabled={modalFormMode.mode === 'cat'}
+              label="菜单名称"
+              placeholder="请输入"
+              rules={[{ required: true, message: '请选择!', type: 'string' }]}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              initialValue={drawerFormValues?.icon}
+              name="icon"
+              disabled={modalFormMode.mode === 'cat'}
+              label="图标"
+              placeholder="请输入"
+            />
+            <ProFormSwitch
+              initialValue={drawerFormValues?.hidden}
+              name="hidden"
+              label="菜单显隐"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormSwitch
+              initialValue={drawerFormValues?.keepalive}
+              name="keepalive"
+              label="缓存"
+              disabled={modalFormMode.mode === 'cat'}
+            />
+            <ProFormDigit
+              initialValue={drawerFormValues?.level}
+              name="level"
+              disabled={modalFormMode.mode === 'cat'}
+              label="层级"
+              placeholder="请输入"
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormDigit
+              initialValue={drawerFormValues?.sort}
+              name="sort"
+              disabled={modalFormMode.mode === 'cat'}
+              label="排序"
+              placeholder="请输入"
+            />
+          </Col>
+        </Row>
       </DrawerForm>
     </>
   )
