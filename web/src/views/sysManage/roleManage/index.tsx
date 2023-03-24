@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
 import { ProTable, DrawerForm, ProFormText, ProFormDateRangePicker } from '@ant-design/pro-components'
-import { Row, Col, Tree, Button, message } from 'antd'
+import { Row, Col, Tree, Button, message, Spin } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useRoleManageApi, useMenuManageApi } from '@/apis/modules/sysManage'
 
@@ -27,6 +27,7 @@ const index = () => {
   // tree树形
   const [treeData, setTreeData] = useState([])
   const [expandedKeys, setExpandedKeys] = useState([])
+  const [loadingTree, setLoadingTree] = useState<boolean>(false)
 
   const addFn = () => {
     setModalFormMode({ title: '新增', mode: 'add' })
@@ -204,6 +205,7 @@ const index = () => {
 
   // 获取tree树形数据
   const findMenuTreeFn = async () => {
+    setLoadingTree(true)
     const data: any = await menuApi.findMenuTreeApi({
       parentId: 'root'
     })
@@ -219,6 +221,7 @@ const index = () => {
       })
     }
     render(data)
+    setLoadingTree(false)
     return data
   }
 
@@ -345,9 +348,11 @@ const index = () => {
             ) : null}
           </Col>
           <Col span={12}>
-            <Tree treeData={treeData} expandedKeys={expandedKeys} onExpand={handleExpand}>
-              {renderTreeNodes(treeData)}
-            </Tree>
+            <Spin spinning={loadingTree}>
+              <Tree treeData={treeData} expandedKeys={expandedKeys} onExpand={handleExpand}>
+                {renderTreeNodes(treeData)}
+              </Tree>
+            </Spin>
           </Col>
           {/* <ProForm.Group>
           <ProFormTreeSelect
