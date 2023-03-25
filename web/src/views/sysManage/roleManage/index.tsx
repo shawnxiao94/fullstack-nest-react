@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
 import { ProTable, DrawerForm, ProFormText, ProFormDateRangePicker } from '@ant-design/pro-components'
-import { Row, Col, Tree, Button, message, Card } from 'antd'
+import { Row, Col, Tree, Button, message, Card, Spin } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useRoleManageApi, useMenuManageApi } from '@/apis/modules/sysManage'
 
@@ -28,6 +28,7 @@ const index = () => {
   const [treeData, setTreeData] = useState<DataNode[]>([])
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([])
   const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([])
+  const [loadingTree, setLoadingTree] = useState<boolean>(false)
 
   const addFn = () => {
     setModalFormMode({ title: '新增', mode: 'add' })
@@ -195,6 +196,7 @@ const index = () => {
   }
   // 获取tree树形数据
   const findMenuTreeFn = async () => {
+    setLoadingTree(true)
     const data: any = await menuApi.findMenuTreeApi({
       parentId: 'root'
     })
@@ -212,6 +214,7 @@ const index = () => {
     }
     render(data)
     setExpandedKeys([...newExpandedKeys])
+    setLoadingTree(false)
     return data
   }
 
