@@ -340,14 +340,18 @@ const index = () => {
           </Col>
           <Col span={24}>
             <Card title="菜单权限" size="small" style={{ backgroundColor: 'transparent' }}>
-              <Tree
-                treeData={treeData}
-                expandedKeys={expandedKeys}
-                onExpand={handleExpand}
-                onCheck={onCheck as any}
-                checkedKeys={checkedKeys}
-                checkable
-                selectable={false}></Tree>
+              {loadingTree ? (
+                <Spin spinning={loadingTree}></Spin>
+              ) : (
+                <Tree
+                  treeData={treeData}
+                  expandedKeys={expandedKeys}
+                  onExpand={handleExpand}
+                  onCheck={onCheck as any}
+                  checkedKeys={checkedKeys}
+                  checkable
+                  selectable={false}></Tree>
+              )}
             </Card>
           </Col>
           {/* <ProForm.Group>
