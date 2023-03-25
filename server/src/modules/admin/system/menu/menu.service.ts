@@ -126,9 +126,10 @@ export class MenuService {
   // 查询所有菜单列表（除按钮外）
   async findAllList(): Promise<ResultData> {
     const data = await this.menuRepository.find({
-      where: { perms: Not(IsNull()), type: 2 },
+      where: { type: Not(2) },
+      // where: { perms: Not(IsNull()), type: 2 },
       order: {
-        id: 'DESC'
+        updateTime: 'DESC'
       }
     })
     return ResultData.ok(data)

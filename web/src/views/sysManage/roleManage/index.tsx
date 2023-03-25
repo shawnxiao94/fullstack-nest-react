@@ -1,11 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons'
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components'
 import { ProTable, DrawerForm, ProFormText, ProFormDateRangePicker } from '@ant-design/pro-components'
-import { Row, Col, Tree, Button, message } from 'antd'
+import { Row, Col, Tree, Button, message, Card } from 'antd'
 import { useRef, useState, useEffect } from 'react'
 import { useRoleManageApi, useMenuManageApi } from '@/apis/modules/sysManage'
 
-const { TreeNode } = Tree
+import type { DataNode } from 'antd/es/tree'
 type FormItemKeys = {
   createTime: string
   id: string
@@ -25,8 +25,9 @@ const index = () => {
   const [drawerFormValues, setDrawerFormValues] = useState<FormItemKeys>(null as any)
   const actionRef = useRef<ActionType>()
   // tree树形
-  const [treeData, setTreeData] = useState([])
-  const [expandedKeys, setExpandedKeys] = useState([])
+  const [treeData, setTreeData] = useState<DataNode[]>([])
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([])
+  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([])
 
   const addFn = () => {
     setModalFormMode({ title: '新增', mode: 'add' })
@@ -48,32 +49,30 @@ const index = () => {
   const fetchInfoMenusFn = async () => {
     if (modalFormMode.mode === 'add') {
       drawerFormRef?.current?.resetFields()
+      const menus = drawerFormValues?.menus?.length
+        ? drawerFormValues.menus.map(m => {
+            m.value = m.id
+            m.label = m.title
+            return m
+          })
+        : []
       drawerFormRef?.current?.setFieldsValue({
         ...drawerFormValues,
-        menus: drawerFormValues?.menus?.length
-          ? drawerFormValues.menus.map(m => {
-              m.value = m.id
-              m.label = m.title
-              return m
-            })
-          : []
+        menus
       })
+      setCheckedKeys(menus)
     } else {
       const res: any = await roleApi.findInfoMenusByRoleIdApi({
         id: drawerFormValues?.id,
         requireMenus: true,
         treeType: false
       })
+      const menus = res[0].menus?.length ? res[0].menus.map(m => m.id) : []
       drawerFormRef?.current?.setFieldsValue({
         ...drawerFormValues,
-        menus: res[0].menus?.length
-          ? res[0].menus.map(m => {
-              m.value = m.id
-              m.label = m.title
-              return m
-            })
-          : []
+        menus
       })
+      setCheckedKeys(menus)
     }
   }
 
@@ -171,14 +170,14 @@ const index = () => {
       // 新增
       await roleApi.addRoleApi({
         ...params,
-        menuIds: params.menus?.length ? params.menus.map(m => m.value) : []
+        menuIds: checkedKeys
       })
       // 刷新
       actionRef?.current?.reload()
       return true
     }
     // 编辑
-    const res = await roleApi.updateRolesByIdApi({ ...drawerFormValues, ...params, menuIds: params.menus.map(m => m.value) })
+    const res = await roleApi.updateRolesByIdApi({ ...drawerFormValues, ...params, menuIds: checkedKeys })
     if (res) {
       // 刷新
       actionRef?.current?.reload()
@@ -186,22 +185,14 @@ const index = () => {
     }
     return false
   }
-
-  const handleValuesChange = (changedValues, allValues) => {
-    console.log(allValues)
-  }
-
-  const handleExpand = expandedKeys => {
+  const handleExpand = (expandedKeys: React.Key[]) => {
     setExpandedKeys(expandedKeys)
   }
 
-  const renderTreeNodes = data =>
-    data.map(item => (
-      <TreeNode key={item.key} title={item.title}>
-        {item.children && renderTreeNodes(item.children)}
-      </TreeNode>
-    ))
-
+  const onCheck = (checkedKeysValue: React.Key[]) => {
+    console.log('onCheck', checkedKeysValue)
+    setCheckedKeys(checkedKeysValue)
+  }
   // 获取tree树形数据
   const findMenuTreeFn = async () => {
     const data: any = await menuApi.findMenuTreeApi({
@@ -213,19 +204,20 @@ const index = () => {
       treeDatas.map((item: any) => {
         newExpandedKeys.push(item.id)
         item.value = item.id
+        item.key = item.id
         if (item?.children?.length) {
           render(item.children)
         }
       })
     }
     render(data)
+    setExpandedKeys([...newExpandedKeys])
     return data
   }
 
   useEffect(() => {
     findMenuTreeFn().then(res => {
-      setTreeData(res.data)
-      setExpandedKeys(res.data.map(item => item.key))
+      setTreeData(res)
     })
   }, [])
 
@@ -305,9 +297,8 @@ const index = () => {
         }}
         onFinish={async values => {
           return updateUserInfoFn(values)
-        }}
-        onValuesChange={handleValuesChange}>
-        <Row gutter={[16, 16]}>
+        }}>
+        <Row gutter={[5, 5]}>
           <Col span={12}>
             <ProFormText
               width="md"
@@ -344,10 +335,17 @@ const index = () => {
               </Col>
             ) : null}
           </Col>
-          <Col span={12}>
-            <Tree treeData={treeData} expandedKeys={expandedKeys} onExpand={handleExpand}>
-              {renderTreeNodes(treeData)}
-            </Tree>
+          <Col span={24}>
+            <Card title="菜单权限" size="small" style={{ backgroundColor: 'transparent' }}>
+              <Tree
+                treeData={treeData}
+                expandedKeys={expandedKeys}
+                onExpand={handleExpand}
+                onCheck={onCheck as any}
+                checkedKeys={checkedKeys}
+                checkable
+                selectable={false}></Tree>
+            </Card>
           </Col>
           {/* <ProForm.Group>
           <ProFormTreeSelect

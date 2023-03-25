@@ -33,14 +33,12 @@ export class AuthGuard implements CanActivate {
     const url = request.url
     const path = url.split('?')[0]
     const token = request.headers['authorization'] as string
-    console.log('request.headers', request.headers)
     if (isEmpty(token)) {
       throw new ApiException(11001)
     }
     try {
       // 挂载对象到当前请求上
       request[ADMIN_USER] = this.jwtService.verify(token)
-      console.log('request[ADMIN_USER]', request[ADMIN_USER])
     } catch (e) {
       // 无法通过token校验
       throw new ApiException(11001)
@@ -67,19 +65,21 @@ export class AuthGuard implements CanActivate {
     if (notNeedPerm) {
       return true
     }
-    const perms: string = await this.loginService.getRedisPermsById(request[ADMIN_USER].uid)
+    /*菜单权限判断*/
+    const menus: string = await this.loginService.getRedisMenusById(request[ADMIN_USER].id)
     // 安全判空
-    if (isEmpty(perms)) {
+    if (isEmpty(menus)) {
       throw new ApiException(11001)
     }
+    /**资源权限判断 */
     // 将sys:admin:user等转换成sys/admin/user
-    const permArray: string[] = (JSON.parse(perms) as string[]).map((e) => {
-      return e.replace(/:/g, '/')
-    })
+    // const permArray: string[] = (JSON.parse(perms) as string[]).map((e) => {
+    //   return e.replace(/:/g, '/')
+    // })
     // 遍历权限是否包含该url，不包含则无访问权限
-    if (!permArray.includes(path.replace(`/${ADMIN_PREFIX}/`, ''))) {
-      throw new ApiException(11003)
-    }
+    // if (!permArray.includes(path.replace(`/${ADMIN_PREFIX}/`, ''))) {
+    //   throw new ApiException(11003)
+    // }
     // pass
     return true
   }

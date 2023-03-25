@@ -115,22 +115,30 @@ export class RoleService {
   }
 
   // 根据ids角色数组获取关联权限按钮
-  async findPermsByIds({ ids }: Pick<InfoArrRoleDto, 'ids'>): Promise<ResultData> {
+  async findMenusByIds({ ids }: Pick<InfoArrRoleDto, 'ids'>): Promise<ResultData> {
     if (!ids.length) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
-    let perms: any[] = []
+    let perms: string[] = []
     if (includes(ids, this.rootRoleId)) {
       // root find all
       const res = await this.menuService.findAllList()
-      perms = res.data
+      if (res?.data?.length) {
+        // 把菜单path路径作为唯一权限标识
+        perms = res.data.reduce((pre, cur) => pre.concat(cur.path), [])
+      }
     } else {
-      perms = await this.roleRepository
+      const res = await this.roleRepository
         .createQueryBuilder('sys_role')
         .leftJoinAndSelect('sys_role.menus', 'menus') // 角色实体表关联的菜单字段
         .where('sys_role.id IN (:...ids)', { ids })
-        .andWhere('menus.type = 2')
-        .andWhere('menus.perms IS NOT NULL')
+        .andWhere('menus.type != 2')
+        // .andWhere('menus.perms IS NOT NULL')
         .orderBy('sys_role.updateTime', 'DESC')
         .getMany()
+      if (res.length) {
+        const arr = res.reduce((pre, cur) => pre.concat(cur.menus), [])
+        // 把菜单path路径作为唯一权限标识
+        perms = arr.reduce((pre, cur) => pre.concat(cur.path), [])
+      }
     }
     return ResultData.ok(perms)
   }

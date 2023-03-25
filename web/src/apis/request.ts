@@ -5,9 +5,9 @@ import { ResultData } from '@/apis/interface'
 import { ResultEnum } from '@/enums/httpEnum'
 import { checkStatus } from './helper/checkStatus'
 import { AxiosCanceler } from './helper/axiosCancel'
-import { setToken } from '@/store/app'
+import { setToken, setUserInfo } from '@/store/app'
 import store from '@/store'
-import { message } from 'antd'
+import { message, Modal } from 'antd'
 
 const axiosCanceler = new AxiosCanceler()
 
@@ -66,9 +66,16 @@ class RequestHttp {
         }
         // * 登录失效（code == 401）
         if (data.code === ResultEnum.OVERDUE) {
-          store.dispatch(setToken(''))
-          message.error(data.message)
-          window.location.hash = '/login'
+          Modal.error({
+            title: '提示',
+            content: data.message || '登录失效',
+            okText: '确认',
+            onOk() {
+              store.dispatch(setToken(''))
+              store.dispatch(setUserInfo(null as any))
+              window.location.hash = '/login'
+            }
+          })
           return Promise.reject(data)
         }
         // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）

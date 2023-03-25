@@ -18,7 +18,7 @@ const roleApi = useRoleManageApi()
 const LayoutMenu = (props: any) => {
   const { pathname } = useLocation()
   const { isCollapse, userInfo, setBreadcrumbList, setAuthRouter, setMenuList: setMenuListAction } = props
-  console.log(findAllBreadcrumb, setBreadcrumbList)
+  // console.log(findAllBreadcrumb, setBreadcrumbList)
   // 获取菜单列表并处理成 antd menu 需要的格式
   const [menuList, setMenuList] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(false)
