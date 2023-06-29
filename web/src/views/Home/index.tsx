@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
 import { setUserInfo } from '@/store/app'
 
-import WebSocketDemo from './components/webSocketDemo'
+// import WebSocketDemo from './components/webSocketDemo'
 
 function index() {
   const { app } = useSelector((state: RootState) => state)
@@ -19,7 +19,7 @@ function index() {
       <div className="card">
         <h2>name:{app.userInfo?.name}</h2>
         <button onClick={clickHandler}>click todo change redux toolkit</button>
-        <WebSocketDemo></WebSocketDemo>
+        {/* <WebSocketDemo></WebSocketDemo> */}
       </div>
     </div>
   )

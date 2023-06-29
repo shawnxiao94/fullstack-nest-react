@@ -142,5 +142,8 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
         localsConvention: 'camelCase'
       }
     }
+    // optimizeDeps: {
+    //   include: ['react', 'react-dom', 'axios']
+    // }
   }
 })

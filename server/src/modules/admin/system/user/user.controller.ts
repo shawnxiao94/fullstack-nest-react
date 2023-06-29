@@ -34,7 +34,7 @@ import { ApiResult } from '@/common/decorator/api-result.decorator'
 
 import { Authorize } from '@/modules/admin/core/decorators/authorize.decorator'
 
-@ApiTags('管理员模块')
+@ApiTags('用户模块')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

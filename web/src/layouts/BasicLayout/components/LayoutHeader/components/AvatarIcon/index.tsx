@@ -4,13 +4,18 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { HOME_URL } from '@/config/config'
 import { connect } from 'react-redux'
-import { setToken } from '@/store/app'
+import { setToken, setUserInfo } from '@/store/app'
+// import { closeSocket } from '@/utils/socket/useSocket'
 import PasswordModal from './PasswordModal'
 import InfoModal from './InfoModal'
 import avatar from '@/assets/images/avatar.png'
 
 const AvatarIcon = (props: any) => {
-  const { setToken } = props
+  const {
+    setToken,
+    setUserInfo
+    // closeSocket
+  } = props
   const navigate = useNavigate()
 
   interface ModalProps {
@@ -29,6 +34,8 @@ const AvatarIcon = (props: any) => {
       cancelText: '取消',
       onOk: () => {
         setToken('')
+        setUserInfo({})
+        // closeSocket()
         message.success('退出登录成功！')
         navigate('/login')
       }
@@ -75,5 +82,9 @@ const AvatarIcon = (props: any) => {
   )
 }
 
-const mapDispatchToProps = { setToken }
+const mapDispatchToProps = {
+  setToken,
+  setUserInfo
+  // closeSocket
+}
 export default connect(null, mapDispatchToProps)(AvatarIcon)

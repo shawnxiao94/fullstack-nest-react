@@ -7,6 +7,7 @@ import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage/session' // 会话存储
 // 多个Slice的引入
 import appSlice from './app'
+import wsSlice from './ws'
 
 // 配置要存储的Slice；
 const persistConfig = {
@@ -18,7 +19,8 @@ const persistConfig = {
 
 // 合并多个Slice
 const rootReducer = combineReducers({
-  app: appSlice
+  app: appSlice,
+  ws: wsSlice
 })
 
 const myPersistReducer = persistReducer(persistConfig, rootReducer)

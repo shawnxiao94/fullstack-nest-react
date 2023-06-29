@@ -31,7 +31,7 @@ module.exports = {
       jsx: true
     }
   },
-  plugins: ['react', '@typescript-eslint', 'react-hooks', 'prettier'],
+  plugins: ['react', '@typescript-eslint', 'react-hooks', 'prettier', 'import'],
   ignorePatterns: ['node_modules/*'],
   /* 继承某些已有的规则 */
   extends: [

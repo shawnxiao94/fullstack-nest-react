@@ -5,6 +5,7 @@ import { rootRouter } from '@/router'
 
 import { HOME_URL } from '@/config/config'
 import store from '@/store'
+// import { initSocket } from '@/utils/socket/useSocket'
 
 const axiosCanceler = new AxiosCanceler()
 
@@ -30,7 +31,13 @@ const AuthRouter = (props: { children: JSX.Element }) => {
   const routerPathList = dynamicRouterPathList.concat(staticRouterPathList)
   // * 如果访问的地址没有在路由表中重定向到403页面
   if (routerPathList.indexOf(pathname) === -1) return <Navigate to="/403" />
-
+  // try {
+  //   console.log('initSocket inini')
+  //   initSocket()
+  // } catch (err) {
+  //   console.log('initSocket err')
+  //   throw new Error(err as any)
+  // }
   // * 当前账号有权限返回 Router，正常访问页面
   return props.children
 }

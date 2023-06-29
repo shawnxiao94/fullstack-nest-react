@@ -6,6 +6,26 @@ const toString = Object.prototype.toString
 export function is(val: unknown, type: string) {
   return toString.call(val) === `[object ${type}]`
 }
+// isEmpty
+export function isEmpty(value) {
+  if (value === null) {
+    return true
+  }
+
+  if (typeof value === 'string' || Array.isArray(value)) {
+    return !value.length
+  }
+
+  if (value instanceof Set || value instanceof Map) {
+    return !value.size
+  }
+
+  if (typeof value === 'object') {
+    return !Object.keys(value).length
+  }
+
+  return false
+}
 
 /**
  * @description:  是否为函数

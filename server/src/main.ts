@@ -1,5 +1,8 @@
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+
+import * as cors from 'cors'
 
 import { AppModule } from './app.module'
 
@@ -16,6 +19,8 @@ const express = require('express')
 
 import { logger } from './common/libs/log4js/logger.middleware'
 
+import { SocketIoAdapter } from '@/modules/ws/socket-io.adapter'
+
 const GlobalPrefix = process.env.GLOBAL_PREFIX
 
 async function bootstrap() {
@@ -28,6 +33,20 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor())
   // 全局注册一下管道ValidationPipe;
   app.useGlobalPipes(new ValidationPipe())
+  // 跨域
+  // app.use(
+  //   cors({
+  //     origin: '*'
+  //   })
+  // )
+  // app.use(
+  //   cors({
+  //     origin: ['http://localhost:3301']
+  //   })
+  // )
+
+  // websocket
+  app.useWebSocketAdapter(new SocketIoAdapter(app, app.get<ConfigService>(ConfigService)))
 
   // 设置swagger文档
   setupSwagger(app)

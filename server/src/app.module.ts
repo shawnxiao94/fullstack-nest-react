@@ -8,6 +8,7 @@ import { RedisModule } from './common/libs/redis/redis.module'
 import { RedisClientOptions } from '@liaoliaots/nestjs-redis'
 import { AdminModule } from './modules/admin/admin.module'
 import { SharedModule } from './shared/shared.module'
+import { WsModule } from './modules/ws/ws.module'
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { SharedModule } from './shared/shared.module'
     ),
     // custom module
     SharedModule,
-    AdminModule
+    AdminModule,
+    WsModule
   ],
   controllers: [],
   providers: [],

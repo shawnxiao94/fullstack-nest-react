@@ -1,15 +1,15 @@
-// import { WsException } from '@nestjs/websockets';
-// import { ErrorCodeMap } from '../contants/error-code.contants';
+import { WsException } from '@nestjs/websockets'
+import { ErrorCodeMap } from '../contants/error-code.contants'
 
-// export class SocketException extends WsException {
-//   private errorCode: number;
+export class SocketException extends WsException {
+  private errorCode: number
 
-//   constructor(errorCode: number) {
-//     super(ErrorCodeMap[errorCode]);
-//     this.errorCode = errorCode;
-//   }
+  constructor(errorCode: number) {
+    super(ErrorCodeMap[errorCode])
+    this.errorCode = errorCode
+  }
 
-//   getErrorCode(): number {
-//     return this.errorCode;
-//   }
-// }
+  getErrorCode(): number {
+    return this.errorCode
+  }
+}

@@ -6,6 +6,7 @@ import { ResultEnum } from '@/enums/httpEnum'
 import { checkStatus } from './helper/checkStatus'
 import { AxiosCanceler } from './helper/axiosCancel'
 import { setToken, setUserInfo } from '@/store/app'
+// import { closeSocket } from '@/utils/socket/useSocket'
 import store from '@/store'
 import { message, Modal } from 'antd'
 
@@ -72,7 +73,8 @@ class RequestHttp {
             okText: '确认',
             onOk() {
               store.dispatch(setToken(''))
-              store.dispatch(setUserInfo(null as any))
+              store.dispatch(setUserInfo({} as any))
+              // closeSocket()
               window.location.hash = '/login'
             }
           })

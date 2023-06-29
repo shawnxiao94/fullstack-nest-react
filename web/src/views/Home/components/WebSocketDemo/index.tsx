@@ -1,92 +1,73 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { connect } from 'react-redux'
+// import WebSocketClient, { Message } from '@/utils/socket'
+// import { io } from 'socket.io-client'
+import io from 'socket.io-client'
 
-import WebSocketClass from '@/utils/webSocket'
-function index() {
-  const ws: any = useRef(null)
-  const [message, setMessage] = useState('')
-  const [readyState, setReadyState] = useState('正在链接中')
-  const [rdNum, SetRdNum] = useState(0)
-  /**
-   * 伪随机函数，测试用
-   *  */
-  const getRandomInt = useCallback(() => {
-    SetRdNum(Math.floor(Math.random() * Math.floor(999)))
-  }, [])
+const ENDPOINT = import.meta.env.VITE_APP_BASE_SOCKET_NSP // WebSocket服务器的地址
+console.log('ENDPOINT', ENDPOINT)
+function index(props: any) {
+  const [messages, setMessages] = useState<string[]>([]) // 保存消息
+  const [text, setText] = useState('') // 保存输入框中的文本
+  const socketRef: any = useRef() // 保存Socket.IO客户端的引用
 
-  const webSocketInit = useCallback(() => {
-    const stateArr = ['正在链接中', '已经链接并且可以通讯', '连接正在关闭', '连接已关闭或者没有链接成功']
-    if (!ws.current || ws.current.readyState === 3) {
-      ws.current = new WebSocket('ws://localhost:7070')
-      ws.current.onopen = () => setReadyState(stateArr[ws.current?.readyState ?? 0])
-      ws.current.onclose = () => setReadyState(stateArr[ws.current?.readyState ?? 0])
-      ws.current.onerror = () => setReadyState(stateArr[ws.current?.readyState ?? 0])
-      ws.current.onmessage = e => {
-        setMessage(e.data)
-      }
-    }
-  }, [ws])
-
-  /**
-   * 初始化 WebSocket
-   * 且使用 WebSocket 原声方法获取信息
-   *  */
-  useLayoutEffect(() => {
-    getRandomInt()
-    webSocketInit()
-    return () => {
-      ws.current?.close()
-    }
-  }, [ws, getRandomInt, webSocketInit])
-
-  console.log('ws.readyState', ws.current?.readyState, readyState)
-
-  // eslint-disable-next-line init-declarations
-  let websocket
-
-  // webSocket后端主动推送
-  const initData = data => {
-    console.log(JSON.parse(data))
-  }
   useEffect(() => {
-    websocket = new WebSocketClass('ws://xxx', initData)
-    // 建立websocket连接
-    websocket.connect()
+    // 创建Socket.IO客户端
+    socketRef.current = io(ENDPOINT, {
+      path: import.meta.env.VITE_APP_BASE_SOCKET_PATH, // 指定WebSocket服务器的路径
+      transports: ['websocket'],
+      query: { token: props.token }
+      // cors: {
+      //   origin: 'http://localhost:3301', // 允许跨域的源地址
+      //   methods: ['GET', 'POST'], // 允许的 HTTP 请求方法
+      //   allowedHeaders: ['Authorization', 'Content-Type'], // 允许的头部信息
+      //   credentials: true // 是否支持 cookies
+      // }
+      // forceNew: true // 强制创建新的连接,forceNew 选项创建新的连接，以避免缓存旧连接时可能出现的问题
+    } as any)
+
+    socketRef.current.on('connect', (socket: any): void => {
+      console.log(`已连接到WebSocket服务器⚡: ${socket?.id}`)
+    })
+    // 监听WebSocket服务器发送的消息
+    socketRef.current.on('message', message => {
+      console.log('⚡:message', message)
+      setMessages(prevMessages => [...prevMessages, message])
+    })
+    // 在组件卸载时关闭WebSocket连接
     return () => {
-      // 关闭websocket
-      websocket.closeMyself()
+      socketRef.current.disconnect()
     }
   }, [])
+
+  const handleSubmit = event => {
+    event.preventDefault()
+
+    if (!text) {
+      return
+    }
+
+    // 发送文本消息到WebSocket服务器
+    socketRef.current.emit('message', text)
+    setText('')
+  }
   return (
     <>
-      <div className="container">
-        <div>message:{message}</div>
-        <button
-          onClick={() => {
-            ws.current?.close()
-          }}>
-          Clone
-        </button>
-        <button
-          onClick={() => {
-            getRandomInt()
-            webSocketInit()
-          }}>
-          start
-        </button>
-        <button
-          onClick={() => {
-            if (ws.current?.readyState !== 1) {
-              console.log('尚未链接成功')
-              setMessage('正在链接')
-              return
-            }
-            ws.current?.send(rdNum.toString())
-          }}>
-          ID:{rdNum}
-        </button>
+      <div>
+        <ul>
+          {messages.map((message, i) => (
+            <li key={i}>{message}</li>
+          ))}
+        </ul>
+
+        <form onSubmit={handleSubmit}>
+          <input type="text" value={text} onChange={event => setText(event.target.value)} />
+          <button type="submit">发送</button>
+        </form>
       </div>
     </>
   )
 }
 
-export default index
+const mapStateToProps = (state: any) => state.app
+export default connect(mapStateToProps, null)(index)

@@ -77,6 +77,14 @@ export class CreateUserDto {
   status: number
 
   @ApiProperty({
+    description: '帐号类型：0-超管，1-后台管理员, 2-普通用户',
+    required: false,
+    default: 2
+  })
+  @IsIn([0, 1, 2])
+  type: number
+
+  @ApiProperty({
     description: '昵称',
     required: false
   })
@@ -154,6 +162,14 @@ export class AddUserDto {
   })
   @IsIn([0, 1])
   status: number
+
+  @ApiProperty({
+    description: '帐号类型：0-超管，1-后台管理员, 2-普通用户',
+    required: false,
+    default: 1
+  })
+  @IsIn([0, 1, 2])
+  type: number
 
   @ApiProperty({
     description: '昵称',
