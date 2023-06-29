@@ -13,25 +13,25 @@
 前端技术栈：react17+ant-design+jsencrypt+socket.io-client+ reduxjs/toolkit+vite3
 
 登录界面
-![登录界面](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/2.jpg)
+![登录界面](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/2.png)
 
 菜单管理
-![菜单管理界面](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/1.jpg)
+![菜单管理界面](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/1.png)
 
 菜单新增
-![菜单新增](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/5.jpg)
+![菜单新增](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/5.png)
 
 用户管理
-![用户管理界面](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/3.jpg)
+![用户管理界面](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/3.png)
 
 角色管理
-![角色管理](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/4.jpg)
+![角色管理](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/4.png)
 
 角色新增界面
-![角色新增界面](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/6.jpg)
+![角色新增界面](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/6.png)
 
 用户新增界面,通信加密
-![用户新增界面,通信加密](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/7.jpg)
+![用户新增界面,通信加密](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/7.png)
 
 设置界面
-![设置界面](https://gitee.com/front-learn/fullstack-nest-react/blob/master/web/public/8.jpg)
+![设置界面](https://gitee.com/front-learn/fullstack-nest-react/raw/master/web/public/img/8.png)
