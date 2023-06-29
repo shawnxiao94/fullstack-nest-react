@@ -1,6 +1,6 @@
 ## description
 
-> 基于 RABC 权限通用后台管理系统-给角色动态分配权限和用户
+> 基于 RABC 权限通用后台管理系统-给角色动态分配权限和用户,web=>react 前台 server => 服务端 admin-vue3-ts=> vue 后台
 
 ```
 1.角色、用户、动态权限菜单
